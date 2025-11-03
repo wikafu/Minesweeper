@@ -75,12 +75,20 @@ document.addEventListener('visibilitychange', () => {
     <button id="daily-button">Daily Challenge</button>
   </div>
 
-  <!-- best today label -->
+  <!-- global best -->
   <div
     id="daily-best"
-    style="width:100%; text-align:center; font-size:14px; opacity:0.85; margin-bottom:4px;"
+    style="width:100%; text-align:center; font-size:14px; opacity:0.9; margin-bottom:2px;"
   >
-    No winners yet 👀
+    No one cleared today. Be the first. 👀
+  </div>
+
+  <!-- your personal best today -->
+  <div
+    id="daily-your"
+    style="width:100%; text-align:center; font-size:12px; opacity:0.8; margin-bottom:6px;"
+  >
+    Your best today: --:--
   </div>
 
   <button
@@ -97,7 +105,6 @@ document.addEventListener('visibilitychange', () => {
     Start
   </button>
 </div>
-
 
 
   <!-- game screen -->

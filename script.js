@@ -12,6 +12,31 @@ let gameOver = false;
 const MAX_HINTS = 3;
 let hintsLeft = MAX_HINTS;
 
+// ---- Farcaster user (for leaderboard) ----
+let currentFid = null;
+let currentUsername = null;
+
+async function initMiniAppUser() {
+  // if we're not inside Farcaster / Base, or sdk is missing, just skip
+  if (typeof sdk === 'undefined' || !sdk) return;
+
+  try {
+    // check if we're in a Mini App
+    const inMiniApp = await sdk.isInMiniApp?.();
+    if (!inMiniApp) return;
+
+    // get context and user
+    const ctx = await sdk.context;
+    if (ctx && ctx.user) {
+      currentFid = ctx.user.fid ?? null;
+      currentUsername = ctx.user.username ?? null;
+      console.log('Mini app user:', currentFid, currentUsername);
+    }
+  } catch (e) {
+    console.error('initMiniAppUser error', e);
+  }
+}
+
 // difficulty levels
 const levels = {
   easy:   { mines: 10 },
@@ -173,6 +198,45 @@ function updateBestIfLower(ms) {
   }
 }
 
+// ---- personal daily best (local only) ----
+const dailyLocalBestPrefix = 'minesweeper:dailyBestLocal:';
+
+function getTodayLocalDateString() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`; // e.g. "2025-11-03"
+}
+
+function getTodayLocalBestKey() {
+  return dailyLocalBestPrefix + getTodayLocalDateString();
+}
+
+function loadYourDailyBest() {
+  const el = document.getElementById('daily-your');
+  if (!el) return;
+
+  const raw = localStorage.getItem(getTodayLocalBestKey());
+  const ms = Number(raw || 0);
+
+  if (!Number.isFinite(ms) || ms <= 0) {
+    el.textContent = 'Your best today: --:--';
+  } else {
+    el.textContent = 'Your best today: ' + formatTime(ms);
+  }
+}
+
+function maybeUpdateYourDailyBest(ms) {
+  const key = getTodayLocalBestKey();
+  const prevRaw = localStorage.getItem(key);
+  const prev = Number(prevRaw || 0);
+
+  if (prev === 0 || ms < prev) {
+    localStorage.setItem(key, String(ms));
+  }
+  loadYourDailyBest();
+}
 
 async function fetchDailyBest() {
   const label = document.getElementById('daily-best');
@@ -181,13 +245,13 @@ async function fetchDailyBest() {
   try {
     const res = await fetch('/api/daily-best', { cache: 'no-store' });
     if (!res.ok) {
-      label.textContent = 'No winners yet 👀';
+      label.textContent = 'No one cleared today. Be the first. 👀';
       return;
     }
 
     const data = await res.json();
     if (!data.best) {
-      label.textContent = 'No winners yet 👀';
+      label.textContent = 'No one cleared today. Be the first. 👀';
       return;
     }
 
@@ -200,7 +264,7 @@ async function fetchDailyBest() {
     console.error('fetchDailyBest error', e);
     const labelSafe = document.getElementById('daily-best');
     if (labelSafe) {
-      labelSafe.textContent = 'No winners yet 👀';
+      labelSafe.textContent = 'No one cleared today. Be the first. 👀';
     }
   }
 }
@@ -410,10 +474,14 @@ window.onload = function () {
   const goReplay = document.getElementById('go-replay');
   const goShare  = document.getElementById('go-share');
 
+    // try to load Farcaster user info for leaderboard
+  initMiniAppUser();
+
   // best and level
   loadBest();
   applyLevelSettings();
 
+  
   // level button on home
   const levelBtn = document.getElementById('level-button');
   if (levelBtn) {
@@ -558,6 +626,9 @@ window.onload = function () {
 
     // load today's best daily time
   fetchDailyBest();
+
+    // load your personal daily best (local)
+  loadYourDailyBest();
 };
 
 // set mines, daily or random
@@ -696,8 +767,9 @@ function revealMines() {
   }
 }
 async function submitDailyResult(timeMs) {
-  const fid = 0;
-  const username = 'player';
+  // use real Farcaster user if we have it, otherwise fall back
+  const fid = currentFid != null ? currentFid : 0;
+  const username = currentUsername || 'player';
 
   try {
     await fetch('/api/daily-best', {
@@ -712,6 +784,7 @@ async function submitDailyResult(timeMs) {
     console.error('submitDailyResult error', e);
   }
 }
+
 
 function checkMine(r, c) {
   if (r < 0 || r >= rows || c < 0 || c >= columns) return;
@@ -763,10 +836,11 @@ function checkMine(r, c) {
     if (dailyMode) {
       markDailyPlayed();
       updateDailyButtonState();
-      // send this run to the backend for best-of-today
       submitDailyResult(lastElapsedMs);
+      maybeUpdateYourDailyBest(lastElapsedMs);
       dailyMode = false;
     }
+
 
     updateHintUI();
     showGameOverPopup('win');
