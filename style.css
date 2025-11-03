@@ -1,0 +1,358 @@
+/* reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #120030 0%, #050009 55%, #000000 100%);
+  color: #f5f5ff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* mini app frame */
+#game-frame {
+  position: relative;
+  width: 100vw;
+  height: 100svh;
+  max-width: 424px;
+  max-height: 695px;
+  margin: 0 auto;
+  padding: 16px 12px calc(18px + env(safe-area-inset-bottom));
+  display: grid;
+  align-items: stretch;
+  justify-items: stretch;
+  overflow: hidden;
+}
+
+/* glass card look for both screens */
+#home-screen,
+#game-screen {
+  background: radial-gradient(circle at top, rgba(124, 77, 255, 0.16), rgba(10, 10, 20, 0.96));
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
+  padding: 16px 14px;
+}
+
+/* layout for the two screens */
+#home-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+#game-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+
+/* title text */
+#home-screen h1,
+#game-screen h1 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f7f2ff;
+  text-shadow: 0 0 8px rgba(152, 114, 255, 0.6);
+}
+
+/* little labels inside the game title */
+#game-screen h1 span {
+  font-weight: 600;
+}
+
+/* base button look */
+button {
+  cursor: pointer;
+  border-radius: 999px;
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease,
+    opacity 0.12s ease;
+}
+
+/* main menu buttons */
+#level-button,
+#start-button {
+  width: 70%;
+  max-width: 260px;
+}
+
+#level-button {
+  padding: 10px 18px;
+  font-size: 16px;
+  background: linear-gradient(135deg, #1f1f2a, #10101a);
+  color: #f5f5ff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#start-button {
+  padding: 12px 22px;
+  font-size: 18px;
+  background: linear-gradient(135deg, #7c4dff, #b794ff);
+  color: #0c0418;
+  box-shadow: 0 10px 24px rgba(124, 77, 255, 0.8);
+}
+
+/* daily challenge button on home top right */
+#daily-button {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0040ff, #00b0ff);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 176, 255, 0.7);
+  white-space: nowrap;
+}
+
+/* in game buttons row */
+#flag-button,
+#hint,
+#share,
+#mute {
+  background: linear-gradient(145deg, #1a1a24, #101018);
+  color: #f5f5ff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8);
+}
+
+
+#flag-button {
+  width: 96px;
+  height: 44px;
+  font-size: 26px;
+}
+
+#share,
+#mute {
+  width: 52px;
+  height: 44px;
+  font-size: 22px;
+}
+
+/* button feedback */
+button:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* flag color will still be toggled in JS */
+#flag-button {
+  background-color: transparent;
+}
+
+/* board sizing variables */
+:root {
+  --board: 360px;
+  --cell: 45px;
+}
+
+/* board container */
+#board {
+  width: var(--board);
+  height: var(--board);
+  display: grid;
+  grid-template-columns: repeat(8, var(--cell));
+  grid-auto-rows: var(--cell);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: radial-gradient(circle at top, #f2f2f7, #bdbdc7);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 0 26px rgba(124, 77, 255, 0.9),
+    0 20px 40px rgba(0, 0, 0, 0.9);
+  margin: 0 auto;
+  transform: translateX(-15px);   /* tiny nudge to the left */
+}
+
+
+/* tiles */
+#board div {
+  width: var(--cell);
+  height: var(--cell);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--cell) * 0.6);
+  font-weight: 700;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: linear-gradient(145deg, #f8f8ff, #d3d3e0);
+  color: #22223a;
+  transition:
+    background-color 0.14s ease,
+    transform 0.08s ease,
+    box-shadow 0.14s ease,
+    color 0.14s ease;
+}
+
+#board div:active {
+  transform: scale(0.96);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
+}
+
+.tile-clicked {
+  background: linear-gradient(145deg, #c5e9ff, #9bd8ff);
+  box-shadow:
+    inset 0 0 8px rgba(0, 162, 255, 0.35),
+    0 0 6px rgba(124, 77, 255, 0.4);
+  color: #001a33;
+  filter: brightness(1.08);
+  animation: tilePop 0.16s ease-out;
+}
+
+
+
+
+/* numbers */
+.x1 { color: #2962ff; }
+.x2 { color: #00c853; }
+.x3 { color: #ff1744; }
+.x4 { color: #304ffe; }
+.x5 { color: #ff6d00; }
+.x6 { color: #00bfa5; }
+.x7 { color: #000000; }
+.x8 { color: #757575; }
+
+/* tiny phone tweaks */
+@media (max-width: 380px) {
+  #game-frame {
+    padding: 10px 8px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  :root {
+    --board: 300px;
+    --cell: 37px;
+  }
+
+  #game-screen h1 {
+    font-size: 15px;
+  }
+}
+/* when flag mode is ON */
+#flag-button.active {
+  background: linear-gradient(145deg, #007aff, #00bfff);
+  box-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
+  color: #fff;
+  transform: scale(1.03);
+}
+/* game over popup */
+#gameover-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  z-index: 50;
+}
+
+.go-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.go-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 320px;
+  background: radial-gradient(circle at top, #1b1030, #05030a);
+  border-radius: 18px;
+  padding: 16px 14px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
+  text-align: center;
+  color: #f5f2ff;
+}
+
+.go-card h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.go-card p {
+  margin: 0 0 14px;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.go-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.go-buttons button {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 14px;
+}
+
+#go-home {
+  background: linear-gradient(135deg, #1f1f2a, #10101a);
+  color: #f5f5ff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#go-replay {
+  background: linear-gradient(135deg, #7c4dff, #b794ff);
+  color: #0c0418;
+  box-shadow: 0 10px 24px rgba(124, 77, 255, 0.8);
+}
+/* share button inside popup */
+#go-share {
+  display: none;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px 0;
+  font-size: 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #007aff, #00bfff);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 12px rgba(0, 191, 255, 0.8);
+  border: none;
+}
+#go-share:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 0 6px rgba(0, 191, 255, 0.6);
+}
+@keyframes tilePop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

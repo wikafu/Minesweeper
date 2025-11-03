@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Minesweeper</title>
+    <meta property="og:image" content="https://YOUR-APP.vercel.app/og.png">
+
+    <!-- share previews -->
+    <meta property="og:title" content="Minesweeper" />
+    <meta property="og:description" content="Tap tiles, avoid bombs" />
+    <meta property="og:image" content="https://your-domain.xyz/og.png" />
+    <meta name="theme-color" content="#000000" />
+
+    <link rel="icon" href="" />
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- your game code -->
+    <script src="script.js" defer></script>
+
+    <!-- farcaster mini app sdk via esm cdn -->
+    <script type="module">
+      import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk"
+
+      // tell farcaster your app is ready once the page is painted
+      window.addEventListener("load", async () => {
+        try {
+          await sdk.actions.ready()
+          await sdk.actions.addMiniApp()
+        } catch {}
+      })
+
+      // make the board perfectly fit the visible frame
+function fitBoard() {
+  const frame = document.getElementById('game-frame');
+  if (!frame) return;
+
+  // leave room for title + button area (~160px)
+  const availW = frame.clientWidth - 24;
+  const availH = frame.clientHeight - 180;
+
+  const size = Math.max(240, Math.min(availW, availH)); // clamp
+  const cell = Math.floor(size / 8);                    // 8x8 grid
+
+  document.documentElement.style.setProperty('--board', `${cell * 8}px`);
+  document.documentElement.style.setProperty('--cell', `${cell}px`);
+}
+
+// run and keep updated
+fitBoard();
+window.addEventListener('resize', fitBoard);
+window.addEventListener('orientationchange', fitBoard);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') fitBoard();
+});
+
+      
+      // small quality of life: block scroll bounce in mini app
+      document.addEventListener("touchmove", (e) => { e.preventDefault() }, { passive: false })
+    </script>
+  </head>
+
+  <body>
+<main id="game-frame">
+
+  <!-- home screen -->
+<div id="home-screen" style="display:flex; flex-direction:column; gap:16px; align-items:center; justify-content:center; width:100%; height:100%;">
+
+  <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+    <h1 style="margin:0; font-size:24px;">Minesweeper</h1>
+    <button id="daily-button">Daily Challenge</button>
+  </div>
+
+  <!-- best today label -->
+  <div id="daily-best" style="width:100%; text-align:center; font-size:14px; opacity:0.85; margin-bottom:4px;">
+    Loading best today...
+  </div>
+
+  <button id="level-button" style="padding:10px 18px; font-size:16px; border-radius:10px; border:0; background:#2a2a2a; color:#fff;">
+    Level: easy
+  </button>
+
+  <button id="start-button" style="padding:12px 22px; font-size:18px; border-radius:10px; border:0; background:#7c4dff; color:#fff;">
+    Start
+  </button>
+</div>
+
+
+  <!-- game screen -->
+<div id="game-screen" style='display:none; width:100%; height:100%;'>
+
+    <h1 style="margin-top:8px; font-size:18px; text-align:center;">
+      LEVEL: <span id="level-label">easy</span> |
+      MINES: <span id="mines-count">0</span> |
+      TIME: <span id="timer">00:00</span> |
+      BEST: <span id="best">--:--</span>
+    </h1>
+
+    <div id="board"></div>
+
+    <div style="display:flex; gap:10px; justify-content:center; margin-bottom:8px;">
+      <button id="flag-button" aria-label="toggle flag" style="width:96px; height:44px; font-size:26px;">🚩</button>
+      <button id="hint" style="width:75px; height:44px; font-size:20px;">💡3</button>
+      <button id="share" style="width:52px; height:44px; font-size:22px;">📤</button>
+      <button id="mute" style="width:52px; height:44px; font-size:22px;">🔊</button>
+    </div>
+
+
+  </div>
+
+<!-- game over popup -->
+<div id="gameover-overlay">
+  <div class="go-backdrop"></div>
+  <div class="go-card">
+    <h2 id="go-title">Cleared</h2>
+    <p id="go-sub">
+      Time: <span id="go-time">00:00</span>
+    </p>
+
+    <!-- new share button -->
+    <button id="go-share">Share</button>
+
+    <div class="go-buttons">
+      <button id="go-home">Home</button>
+      <button id="go-replay">Replay</button>
+    </div>
+  </div>
+</div>
+
+
+</main>
+
+  </body>
+</html>

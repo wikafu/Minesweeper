@@ -1,0 +1,28 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjE0MTU2OTMsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgxNjMwMGY4NmQ0NTRiNjAwMWFjNDZhZDgzYmJCZEY3RDA4QkU5Q2U3In0",
+    "payload": "eyJkb21haW4iOiJtaW5lc3dlZXBlci1uaW5lLW1vY2hhLnZlcmNlbC5hcHAifQ",
+    "signature": "yRobAilP8wQ316EoSgK2AjGR9D7SMWhWqYJmDFcRIbBgtNeGWBvKU9VUNyhhpWQHtbAemxzWGNGBK6aoN1EpUxw="
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Minesweeper",
+    "subtitle": "Classic puzzle",
+    "description": "Clear the board without hitting a mine",
+    "homeUrl": "https://minesweeper-nine-mocha.vercel.app",
+    "webhookUrl": "https://minesweeper-nine-mocha.vercel.app/api/webhook",
+    "primaryCategory": "games",
+    "tags": ["games", "puzzle", "minesweeper"],
+    "iconUrl": "https://minesweeper-nine-mocha.vercel.app/icon.png",
+    "heroImageUrl": "https://minesweeper-nine-mocha.vercel.app/og.png",
+    "splashImageUrl": "https://minesweeper-nine-mocha.vercel.app/og.png",
+    "splashBackgroundColor": "#000000",
+    "screenshotUrls": ["https://minesweeper-nine-mocha.vercel.app/screenshot-portrait.png"],
+    "ogTitle": "Minesweeper",
+    "ogDescription": "Play Minesweeper inside Farcaster Mini Apps",
+    "ogImageUrl": "https://minesweeper-nine-mocha.vercel.app/og.png"
+  },
+  "baseBuilder": {
+    "ownerAddress": "0xYOUR_OWNER_ADDRESS"
+  }
+}
