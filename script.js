@@ -179,7 +179,7 @@ async function fetchDailyBest() {
   if (!label) return;
 
   try {
-    const res = await fetch('/api/daily/best', { cache: 'no-store' });
+    const res = await fetch('/api/daily-best', { cache: 'no-store' });
     if (!res.ok) {
       label.textContent = 'No winners yet 👀';
       return;
@@ -696,13 +696,11 @@ function revealMines() {
   }
 }
 async function submitDailyResult(timeMs) {
-  // for now we send dummy "player" name and no real fid.
-  // later we can plug real Farcaster identity here.
   const fid = 0;
   const username = 'player';
 
   try {
-    await fetch('/api/daily/best', {
+    await fetch('/api/daily-best', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fid, username, timeMs }),
