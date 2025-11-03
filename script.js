@@ -173,6 +173,7 @@ function updateBestIfLower(ms) {
   }
 }
 
+
 async function fetchDailyBest() {
   const label = document.getElementById('daily-best');
   if (!label) return;
