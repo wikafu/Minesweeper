@@ -13,29 +13,39 @@ const MAX_HINTS = 3;
 let hintsLeft = MAX_HINTS;
 
 // ---- Farcaster user (for leaderboard) ----
+// ---- Farcaster user (for leaderboard) ----
 let currentFid = null;
 let currentUsername = null;
 
 async function initMiniAppUser() {
-  // if we're not inside Farcaster / Base, or sdk is missing, just skip
-  if (typeof sdk === 'undefined' || !sdk) return;
+  // try to find the SDK (works whether it's `sdk` or `frame.sdk`)
+  const sdkRef =
+    typeof sdk !== 'undefined' && sdk
+      ? sdk
+      : typeof frame !== 'undefined' && frame.sdk
+      ? frame.sdk
+      : null;
+
+  if (!sdkRef) {
+    console.log('Mini App SDK not found – running as normal website');
+    return;
+  }
 
   try {
-    // check if we're in a Mini App
-    const inMiniApp = await sdk.isInMiniApp?.();
-    if (!inMiniApp) return;
-
-    // get context and user
-    const ctx = await sdk.context;
+    // directly read the context (works only inside a Mini App)
+    const ctx = await sdkRef.context;
     if (ctx && ctx.user) {
       currentFid = ctx.user.fid ?? null;
       currentUsername = ctx.user.username ?? null;
-      console.log('Mini app user:', currentFid, currentUsername);
+      console.log('Mini App user:', currentFid, currentUsername);
+    } else {
+      console.log('No user in Mini App context');
     }
   } catch (e) {
     console.error('initMiniAppUser error', e);
   }
 }
+
 
 // difficulty levels
 const levels = {
