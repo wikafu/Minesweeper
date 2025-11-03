@@ -13,9 +13,19 @@ const MAX_HINTS = 3;
 let hintsLeft = MAX_HINTS;
 
 // ---- Farcaster user (for leaderboard) ----
-// ---- Farcaster user (for leaderboard) ----
 let currentFid = null;
 let currentUsername = null;
+
+function updateFidLabel() {
+  const el = document.getElementById('player-fid');
+  if (!el) return;
+
+  if (currentFid != null) {
+    el.textContent = 'FID: ' + currentFid;
+  } else {
+    el.textContent = 'FID: guest';
+  }
+}
 
 async function initMiniAppUser() {
   // try to find the SDK (works whether it's `sdk` or `frame.sdk`)
@@ -484,6 +494,9 @@ window.onload = function () {
   const goReplay = document.getElementById('go-replay');
   const goShare  = document.getElementById('go-share');
 
+    // show guest FID by default
+  updateFidLabel();
+
     // try to load Farcaster user info for leaderboard
   initMiniAppUser();
 
@@ -491,7 +504,6 @@ window.onload = function () {
   loadBest();
   applyLevelSettings();
 
-  
   // level button on home
   const levelBtn = document.getElementById('level-button');
   if (levelBtn) {
