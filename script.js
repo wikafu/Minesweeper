@@ -272,6 +272,7 @@ function updateBestIfLower(ms) {
 
 // ---- personal daily best (local only) ----
 const dailyLocalBestPrefix = 'minesweeper:dailyBestLocal:';
+const dailyLostKey = 'minesweeper:dailyLostToday'; // mark if user lost today's challenge
 
 function getTodayLocalDateString() {
   const now = new Date();
@@ -289,15 +290,19 @@ function loadYourDailyBest() {
   const el = document.getElementById('daily-your');
   if (!el) return;
 
+  const lost = localStorage.getItem(dailyLostKey) === getTodayLocalDateString();
   const raw = localStorage.getItem(getTodayLocalBestKey());
   const ms = Number(raw || 0);
 
-  if (!Number.isFinite(ms) || ms <= 0) {
+  if (lost) {
+    el.textContent = 'Your best today: LOST';
+  } else if (!Number.isFinite(ms) || ms <= 0) {
     el.textContent = 'Your best today: --:--';
   } else {
     el.textContent = 'Your best today: ' + formatTime(ms);
   }
 }
+
 
 function maybeUpdateYourDailyBest(ms) {
   const key = getTodayLocalBestKey();
@@ -950,6 +955,7 @@ function clickTile() {
 
     // if this was the daily run, mark today's chance as used
     if (dailyMode) {
+      localStorage.setItem(dailyLostKey, getTodayLocalDateString());
       markDailyPlayed();
       updateDailyButtonState();
       dailyMode = false;
@@ -1051,6 +1057,7 @@ function checkMine(r, c) {
       markDailyPlayed();
       updateDailyButtonState();
       submitDailyResult(lastElapsedMs);
+      localStorage.removeItem(dailyLostKey); // 👈 clear loss record
       maybeUpdateYourDailyBest(lastElapsedMs);
       dailyMode = false;
     }
