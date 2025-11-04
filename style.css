@@ -378,12 +378,6 @@ button:active {
   text-transform: none;
 }
 
-/* small icon before the @username */
-#home-screen #player-fid::before {
-  content: "👤";
-  font-size: 13px;
-  opacity: 0.9;
-}
 /* blue username badge */
 #home-screen #player-fid {
   align-self: flex-start;
