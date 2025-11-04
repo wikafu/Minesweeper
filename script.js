@@ -12,6 +12,7 @@ let gameOver = false;
 const MAX_HINTS = 3;
 let hintsLeft = MAX_HINTS;
 
+
 // ---- Farcaster user (for leaderboard) ----
 let currentFid = null;
 let currentUsername = null;
@@ -28,22 +29,31 @@ function updateFidLabel() {
 }
 
 async function initMiniAppUser() {
-  // try to find the SDK (works whether it's `sdk` or `frame.sdk`)
-  const sdkRef =
-    typeof sdk !== 'undefined' && sdk
-      ? sdk
-      : typeof frame !== 'undefined' && frame.sdk
-      ? frame.sdk
-      : null;
-
-  if (!sdkRef) {
-    console.log('Mini App SDK not found – running as normal website');
+  // if sdk isn't there, we're in a normal browser, not a mini app
+  if (typeof sdk === 'undefined' || !sdk) {
+    console.log('Mini App SDK not found – probably running in normal browser');
+    // label already shows "guest"
     return;
   }
 
   try {
-    // directly read the context (works only inside a Mini App)
-    const ctx = await sdkRef.context;
+    // if isInMiniApp exists, use it, otherwise assume true (some hosts don’t expose it)
+    let inMiniApp = true;
+    if (typeof sdk.isInMiniApp === 'function') {
+      inMiniApp = await sdk.isInMiniApp();
+    }
+    console.log('isInMiniApp:', inMiniApp);
+
+    if (!inMiniApp) {
+      console.log('Not inside a Mini App, keeping guest FID');
+      updateFidLabel();
+      return;
+    }
+
+    // get the context with user info
+    const ctx = await sdk.context;
+    console.log('Mini App context:', ctx);
+
     if (ctx && ctx.user) {
       currentFid = ctx.user.fid ?? null;
       currentUsername = ctx.user.username ?? null;
@@ -54,6 +64,9 @@ async function initMiniAppUser() {
   } catch (e) {
     console.error('initMiniAppUser error', e);
   }
+
+  // after we tried to load user (success or fail), update the label
+  updateFidLabel();
 }
 
 
