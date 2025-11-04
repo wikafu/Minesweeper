@@ -65,52 +65,31 @@
 <main id="game-frame">
 
   <!-- home screen -->
-<div
-  id="home-screen"
-  style="display:flex; flex-direction:column; gap:16px; align-items:center; justify-content:center; width:100%; height:100%;"
->
-  <!-- FID label, top-left -->
-<div id="player-fid">
-  guest
-</div>
-
-  <div
-    style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"
-  >
-    <h1 style="margin:0; font-size:24px;">Minesweeper</h1>
+<div id="home-screen">
+  <!-- top row: FID on left, Daily on right -->
+  <div class="home-top-row">
+    <div id="player-fid">guest</div>
     <button id="daily-button">Daily Challenge</button>
   </div>
 
-  <!-- global best -->
-  <div
-    id="daily-best"
-    style="width:100%; text-align:center; font-size:14px; opacity:0.9; margin-bottom:2px;"
-  >
-    No one cleared today. Be the first. 👀
+  <!-- daily text in the top-middle -->
+  <div id="home-daily-summary">
+    <div id="daily-best">
+      No one cleared today. Be the first. 👀
+    </div>
+    <div id="daily-your">
+      Your best today: --:--
+    </div>
   </div>
 
-  <!-- your personal best today -->
-  <div
-    id="daily-your"
-    style="width:100%; text-align:center; font-size:12px; opacity:0.8; margin-bottom:6px;"
-  >
-    Your best today: --:--
-  </div>
+  <!-- big centered title -->
+  <h1 id="home-title">MINESWEEPER</h1>
 
-  <button
-    id="level-button"
-    style="padding:10px 18px; font-size:16px; border-radius:10px; border:0; background:#2a2a2a; color:#fff;"
-  >
-    Level: easy
-  </button>
-
-  <button
-    id="start-button"
-    style="padding:12px 22px; font-size:18px; border-radius:10px; border:0; background:#7c4dff; color:#fff;"
-  >
-    Start
-  </button>
+  <!-- buttons under the title -->
+  <button id="level-button">Level: easy</button>
+  <button id="start-button">Start</button>
 </div>
+
 
 
   <!-- game screen -->
