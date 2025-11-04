@@ -28,19 +28,33 @@ function updateFidLabel() {
   }
 }
 
+// wait a bit for the sdk to appear (mini app host may inject it late)
+async function waitForSdk(maxMs = 3000) {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    if (typeof sdk !== 'undefined' && sdk) {
+      return sdk;
+    }
+    // wait 100ms, then check again
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return null;
+}
+
 async function initMiniAppUser() {
-  // if sdk isn't there, we're in a normal browser, not a mini app
-  if (typeof sdk === 'undefined' || !sdk) {
-    console.log('Mini App SDK not found – probably running in normal browser');
-    // label already shows "guest"
+  const sdkRef = await waitForSdk();
+
+  if (!sdkRef) {
+    console.log('Mini App SDK not found after waiting – maybe normal browser');
+    // label already says "guest"
     return;
   }
 
   try {
-    // if isInMiniApp exists, use it, otherwise assume true (some hosts don’t expose it)
+    // some hosts expose isInMiniApp, some don’t. if missing, just assume true.
     let inMiniApp = true;
-    if (typeof sdk.isInMiniApp === 'function') {
-      inMiniApp = await sdk.isInMiniApp();
+    if (typeof sdkRef.isInMiniApp === 'function') {
+      inMiniApp = await sdkRef.isInMiniApp();
     }
     console.log('isInMiniApp:', inMiniApp);
 
@@ -50,8 +64,7 @@ async function initMiniAppUser() {
       return;
     }
 
-    // get the context with user info
-    const ctx = await sdk.context;
+    const ctx = await sdkRef.context;
     console.log('Mini App context:', ctx);
 
     if (ctx && ctx.user) {
@@ -68,6 +81,7 @@ async function initMiniAppUser() {
   // after we tried to load user (success or fail), update the label
   updateFidLabel();
 }
+
 
 
 // difficulty levels
