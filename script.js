@@ -510,14 +510,66 @@ function playBomb() {
 }
 
 // game over popup helper
-function showGameOverPopup(kind) {
   if (!goOverlay || !goTitle || !goTimeText) return;
 
   const shareBtn  = document.getElementById('go-share');
   const replayBtn = document.getElementById('go-replay');
 
+  // random fun messages
+  const winMessages = [
+    "you cleared the minefield 🧠",
+    "flawless victory 😮‍💨",
+    "that was clean 🔥",
+    "brains > bombs 🧠💣",
+    "no mines, no problems 😎",
+    "speed and precision 💨",
+    "easy clap 🫡",
+    "the board never stood a chance 💪",
+    "defused like a pro 👏",
+    "W run ✅",
+    "textbook sweep 📘",
+    "zero casualties 👀",
+    "surgical with it 🧤",
+    "iq over 9000 🧠",
+    "one tap master 🎯",
+    "clean sheet, no sweat 🧽",
+    "that minefield never saw it coming 🚀",
+    "another day, another W 💜",
+    "silent but deadly… but you were deadlier 😏",
+    "efficiency level: god tier ⚡"
+  ];
+
+  const loseMessages = [
+    "boom… try again 💣",
+    "that mine came outta nowhere 😭",
+    "kaboom. instant regret 💀",
+    "you blinked… and it was over 💣",
+    "sneaky little bomb 👀",
+    "close one… but no cigar 💨",
+    "one tile away from glory 😩",
+    "the mine said *hi* first 💥",
+    "back to bootcamp, soldier 🪖",
+    "💣 game over, commander",
+    "your luck ran out faster than the timer ⏱️",
+    "mines: 1, you: 0 🧨",
+    "tactical fail 😬",
+    "almost genius… almost 😔",
+    "don’t step there next time 🤦‍♂️",
+    "unlucky spawn 😪",
+    "who planted that one 😭",
+    "that was a setup 💀",
+    "friendly fire? nope 💣",
+    "rng wasn’t on your side 🎲"
+  ];
+
+  const randomLine =
+    kind === "win"
+      ? winMessages[Math.floor(Math.random() * winMessages.length)]
+      : loseMessages[Math.floor(Math.random() * loseMessages.length)];
+
+  // show popup
   goOverlay.style.display = 'block';
-  goTitle.textContent = kind === 'win' ? 'Congrats 🎉' : 'Game Over';
+  goTitle.textContent = randomLine;
   goTimeText.textContent = formatTime(lastElapsedMs);
 
   // share only on win
@@ -533,7 +585,7 @@ function showGameOverPopup(kind) {
       replayBtn.style.display = 'inline-block';
     }
   }
-}
+
 
 // main setup
 window.onload = function () {
