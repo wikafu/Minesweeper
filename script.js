@@ -21,14 +21,34 @@ function updateFidLabel() {
   const el = document.getElementById('player-fid');
   if (!el) return;
 
-  if (currentUsername) {
-    el.textContent = '@' + currentUsername; // show username
-  } else if (currentFid != null) {
-    el.textContent = 'FID: ' + currentFid; // fallback
+  // clear any old content
+  el.innerHTML = '';
+
+  // choose username text
+  const nameText = currentUsername ? '@' + currentUsername
+                    : currentFid != null ? 'FID: ' + currentFid
+                    : 'guest';
+
+  // create the avatar circle
+  const img = document.createElement('img');
+  img.className = 'fid-avatar';
+
+  if (currentFid) {
+    // Farcaster profile pics come from cdn.farcaster.xyz
+    img.src = `https://cdn.farcaster.xyz/avatar/${currentFid}`;
   } else {
-    el.textContent = 'guest';
+    // fallback pfp
+    img.src = 'https://cdn.farcaster.xyz/avatar/default';
   }
+
+  // username text element
+  const span = document.createElement('span');
+  span.textContent = nameText;
+
+  el.appendChild(img);
+  el.appendChild(span);
 }
+
 
 
 // wait a bit for the sdk to appear (mini app host may inject it late)

@@ -384,3 +384,27 @@ button:active {
   font-size: 13px;
   opacity: 0.9;
 }
+/* blue username badge */
+#home-screen #player-fid {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 6px;
+  border-radius: 999px;
+  background: #007aff;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* avatar inside the badge */
+#home-screen #player-fid .fid-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+}
