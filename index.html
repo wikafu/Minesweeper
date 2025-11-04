@@ -15,49 +15,50 @@
     <link rel="icon" href="" />
     <link rel="stylesheet" href="style.css" />
 
+    
     <!-- your game code -->
     <script src="script.js" defer></script>
 
-    <!-- farcaster mini app sdk via esm cdn -->
-    <script type="module">
-      import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk"
+<!-- farcaster mini app sdk via esm cdn -->
+<script type="module">
+  import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk"
 
-      // tell farcaster your app is ready once the page is painted
-      window.addEventListener("load", async () => {
-        try {
-          await sdk.actions.ready()
-          await sdk.actions.addMiniApp()
-        } catch {}
-      })
+  // 👉 add this line so script.js can see it
+  window.sdk = sdk
 
-      // make the board perfectly fit the visible frame
-function fitBoard() {
-  const frame = document.getElementById('game-frame');
-  if (!frame) return;
+  // tell farcaster your app is ready once the page is painted
+  window.addEventListener("load", async () => {
+    try {
+      await sdk.actions.ready()
+      await sdk.actions.addMiniApp()
+    } catch {}
+  })
 
-  // leave room for title + button area (~160px)
-  const availW = frame.clientWidth - 24;
-  const availH = frame.clientHeight - 180;
+  // make the board perfectly fit the visible frame
+  function fitBoard() {
+    const frame = document.getElementById('game-frame');
+    if (!frame) return;
 
-  const size = Math.max(240, Math.min(availW, availH)); // clamp
-  const cell = Math.floor(size / 8);                    // 8x8 grid
+    const availW = frame.clientWidth - 24;
+    const availH = frame.clientHeight - 180;
 
-  document.documentElement.style.setProperty('--board', `${cell * 8}px`);
-  document.documentElement.style.setProperty('--cell', `${cell}px`);
-}
+    const size = Math.max(240, Math.min(availW, availH));
+    const cell = Math.floor(size / 8);
 
-// run and keep updated
-fitBoard();
-window.addEventListener('resize', fitBoard);
-window.addEventListener('orientationchange', fitBoard);
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') fitBoard();
-});
+    document.documentElement.style.setProperty('--board', `${cell * 8}px`);
+    document.documentElement.style.setProperty('--cell', `${cell}px`);
+  }
 
-      
-      // small quality of life: block scroll bounce in mini app
-      document.addEventListener("touchmove", (e) => { e.preventDefault() }, { passive: false })
-    </script>
+  fitBoard();
+  window.addEventListener('resize', fitBoard);
+  window.addEventListener('orientationchange', fitBoard);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') fitBoard();
+  });
+
+  // block scroll bounce
+  document.addEventListener("touchmove", (e) => { e.preventDefault() }, { passive: false })
+</script>
   </head>
 
   <body>
