@@ -356,3 +356,31 @@ button:active {
     opacity: 1;
   }
 }
+/* player username badge at top of home screen */
+#home-screen #player-fid {
+  align-self: flex-start;              /* stick to the left */
+  padding: 4px 10px;
+  margin-bottom: 6px;
+  border-radius: 999px;               /* pill shape */
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  background: radial-gradient(
+    circle at top left,
+    rgba(124, 77, 255, 0.45),
+    rgba(10, 10, 20, 0.95)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #f5f2ff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7);
+  text-transform: none;
+}
+
+/* small icon before the @username */
+#home-screen #player-fid::before {
+  content: "👤";
+  font-size: 13px;
+  opacity: 0.9;
+}
