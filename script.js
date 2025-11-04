@@ -21,12 +21,15 @@ function updateFidLabel() {
   const el = document.getElementById('player-fid');
   if (!el) return;
 
-  if (currentFid != null) {
-    el.textContent = 'FID: ' + currentFid;
+  if (currentUsername) {
+    el.textContent = '@' + currentUsername; // show username
+  } else if (currentFid != null) {
+    el.textContent = 'FID: ' + currentFid; // fallback
   } else {
-    el.textContent = 'FID: guest';
+    el.textContent = 'guest';
   }
 }
+
 
 // wait a bit for the sdk to appear (mini app host may inject it late)
 async function waitForSdk(maxMs = 3000) {
