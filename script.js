@@ -488,9 +488,12 @@ function useHint() {
 // sounds
 const sndClick = new Audio('./click.mp3');
 const sndBomb  = new Audio('./over.mp3');
+const sndWin = new Audio('./win.mp3');
 sndClick.volume = 0.6;
 sndBomb.volume  = 0.8;
+sndWin.volume = 0.7;
 let muted = false;
+
 
 function playClick() {
   if (!muted) {
@@ -505,6 +508,15 @@ function playBomb() {
     try {
       sndBomb.currentTime = 0;
       sndBomb.play();
+    } catch {}
+  }
+}
+
+function playWin() {
+  if (!muted) {
+    try {
+      sndWin.currentTime = 0;
+      sndWin.play();
     } catch {}
   }
 }
@@ -969,6 +981,7 @@ function checkMine(r, c) {
 
 
     updateHintUI();
+    playWin();
     showGameOverPopup('win');
   }
 }
