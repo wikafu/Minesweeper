@@ -11,6 +11,7 @@ let gameOver = false;
 
 const MAX_HINTS = 3;
 let hintsLeft = MAX_HINTS;
+let dailyGlobalBestMs = 0;   // today's best daily time from the server
 
 
 // ---- Farcaster user (for leaderboard) ----
@@ -317,12 +318,14 @@ async function fetchDailyBest() {
     const res = await fetch('/api/daily-best', { cache: 'no-store' });
     if (!res.ok) {
       label.textContent = 'No one cleared today. Be the first. 👀';
+      dailyGlobalBestMs = 0;
       return;
     }
 
     const data = await res.json();
     if (!data.best) {
       label.textContent = 'No one cleared today. Be the first. 👀';
+      dailyGlobalBestMs = 0;
       return;
     }
 
@@ -330,15 +333,32 @@ async function fetchDailyBest() {
     const username = best.username || 'player';
     const timeMs = Number(best.timeMs || 0);
 
+    dailyGlobalBestMs = timeMs; // 👈 remember today’s winner time
+
+    // text on home screen
     label.textContent = `🏆 Best Today: @${username} – ${formatTime(timeMs)}`;
+
+    // if we are currently in daily mode, also update the header BEST
+    if (dailyMode || lastGameWasDaily) {
+      const bestSpan = document.getElementById('best');
+      if (bestSpan) {
+        if (dailyGlobalBestMs > 0) {
+          bestSpan.textContent = formatTime(dailyGlobalBestMs);
+        } else {
+          bestSpan.textContent = '--:--';
+        }
+      }
+    }
   } catch (e) {
     console.error('fetchDailyBest error', e);
     const labelSafe = document.getElementById('daily-best');
     if (labelSafe) {
       labelSafe.textContent = 'No one cleared today. Be the first. 👀';
     }
+    dailyGlobalBestMs = 0;
   }
 }
+
 
 function startTimer() {
   if (timerRunning) return;
@@ -441,6 +461,35 @@ function updateHintUI() {
     btn.disabled = false;
     btn.style.opacity = '1';
   }
+}
+
+  // update the tiny daily progress bar
+function updateDailyProgress() {
+  const wrap  = document.getElementById('daily-progress-wrap');
+  const label = document.getElementById('daily-progress-label');
+  const bar   = document.getElementById('daily-progress-bar');
+  if (!wrap || !label || !bar) return;
+
+  // only show in daily games
+  if (!dailyMode && !lastGameWasDaily) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  const totalSafe = rows * columns - minesCount; // tiles that are not mines
+  if (totalSafe <= 0) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  const pct = Math.min(
+    100,
+    Math.max(0, Math.round((tilesClicked / totalSafe) * 100))
+  );
+
+  wrap.style.display = 'flex';
+  label.textContent = 'Daily Progress: ' + pct + '%';
+  bar.style.width = pct + '%';
 }
 
 function useHint() {
@@ -638,8 +687,18 @@ window.onload = function () {
     startBtn.addEventListener('click', () => {
       const home = document.getElementById('home-screen');
       const game = document.getElementById('game-screen');
+
       dailyMode = false;
       dailySeed = '';
+      lastGameWasDaily = false;
+
+      // BEST = your local best (normal mode)
+      const bestSpan = document.getElementById('best');
+      if (bestSpan) {
+        const v = Number(localStorage.getItem(bestKey) || 0);
+        bestSpan.textContent = v > 0 ? formatTime(v) : '--:--';
+      }
+
       if (home && game) {
         home.style.display = 'none';
         game.style.display = 'flex';
@@ -647,6 +706,7 @@ window.onload = function () {
       startGame();
     });
   }
+
 
   // daily challenge button
   const dailyBtn = document.getElementById('daily-button');
@@ -673,6 +733,16 @@ window.onload = function () {
       dailyMode = true;
       dailySeed = getDailySeedString(); // date + current level
 
+      // BEST = today's winner time from server (or --:--)
+      const bestSpan = document.getElementById('best');
+      if (bestSpan) {
+        if (dailyGlobalBestMs > 0) {
+          bestSpan.textContent = formatTime(dailyGlobalBestMs);
+        } else {
+          bestSpan.textContent = '--:--';
+        }
+      }
+
       if (home && game) {
         home.style.display = 'none';
         game.style.display = 'flex';
@@ -681,6 +751,7 @@ window.onload = function () {
       startGame();
     });
   }
+
 
   // hint button
   const hintBtn = document.getElementById('hint');
@@ -725,9 +796,11 @@ window.onload = function () {
       }
       dailyMode = false;
       dailySeed = '';
+      lastGameWasDaily = false;
       stopTimer();
       lastElapsedMs = 0;
       renderTimer(0);
+      updateDailyProgress();
     });
   }
 
@@ -812,6 +885,7 @@ function startGame() {
   renderTimer(0);
   applyLevelSettings();
   updateHintUI();
+  updateDailyProgress();
 
   const boardEl = document.getElementById('board');
   if (boardEl) boardEl.innerHTML = '';
@@ -961,6 +1035,8 @@ function checkMine(r, c) {
     checkMine(r + 1, c);
     checkMine(r + 1, c + 1);
   }
+
+  updateDailyProgress();
 
   // win
   if (tilesClicked == rows * columns - minesCount) {
