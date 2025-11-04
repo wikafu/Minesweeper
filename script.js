@@ -234,11 +234,21 @@ let timerRunning = false;
 let startTs = 0;
 let lastElapsedMs = 0;
 
-// best time storage
-const bestKey = 'minesweeper:bestTimeMs';
+// best time storage (per difficulty)
+const bestKeyPrefix = 'minesweeper:bestTimeMs:';
+
+function getBestKeyForLevel(level) {
+  return bestKeyPrefix + level;       // e.g. "minesweeper:bestTimeMs:easy"
+}
+
+function getCurrentLevelBestMs() {
+  const key = getBestKeyForLevel(currentLevel);
+  return Number(localStorage.getItem(key) || 0);
+}
 
 // popup refs
 let goOverlay, goTitle, goTimeText;
+
 
 // time helpers
 function formatTime(ms) {
@@ -254,21 +264,28 @@ function renderTimer(ms) {
 }
 
 function loadBest() {
-  const v = Number(localStorage.getItem(bestKey) || 0);
   const el = document.getElementById('best');
   if (!el) return;
-  if (v > 0) el.textContent = formatTime(v);
-  else el.textContent = '--:--';
+
+  const v = getCurrentLevelBestMs();
+  if (v > 0) {
+    el.textContent = formatTime(v);
+  } else {
+    el.textContent = '--:--';
+  }
 }
 
 function updateBestIfLower(ms) {
-  const prev = Number(localStorage.getItem(bestKey) || 0);
+  const key = getBestKeyForLevel(currentLevel);
+  const prev = Number(localStorage.getItem(key) || 0);
+
   if (prev === 0 || ms < prev) {
-    localStorage.setItem(bestKey, String(ms));
+    localStorage.setItem(key, String(ms));
     const el = document.getElementById('best');
     if (el) el.textContent = formatTime(ms);
   }
 }
+
 
 // ---- personal daily best (local only) ----
 const dailyLocalBestPrefix = 'minesweeper:dailyBestLocal:';
@@ -697,12 +714,13 @@ window.onload = function () {
       dailySeed = '';
       lastGameWasDaily = false;
 
-      // BEST = your local best (normal mode)
-      const bestSpan = document.getElementById('best');
-      if (bestSpan) {
-        const v = Number(localStorage.getItem(bestKey) || 0);
-        bestSpan.textContent = v > 0 ? formatTime(v) : '--:--';
-      }
+// BEST = your local best for this level (normal mode)
+const bestSpan = document.getElementById('best');
+if (bestSpan) {
+  const v = getCurrentLevelBestMs();
+  bestSpan.textContent = v > 0 ? formatTime(v) : '--:--';
+}
+
 
       if (home && game) {
         home.style.display = 'none';
