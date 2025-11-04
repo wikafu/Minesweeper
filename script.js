@@ -510,6 +510,7 @@ function playBomb() {
 }
 
 // game over popup helper
+function showGameOverPopup(kind) {
   if (!goOverlay || !goTitle || !goTimeText) return;
 
   const shareBtn  = document.getElementById('go-share');
@@ -585,7 +586,7 @@ function playBomb() {
       replayBtn.style.display = 'inline-block';
     }
   }
-
+  }
 
 // main setup
 window.onload = function () {
