@@ -16,6 +16,7 @@ let hintsLeft = MAX_HINTS;
 // ---- Farcaster user (for leaderboard) ----
 let currentFid = null;
 let currentUsername = null;
+let currentPfpUrl = null;   // 👈 new
 
 function updateFidLabel() {
   const el = document.getElementById('player-fid');
@@ -30,16 +31,15 @@ function updateFidLabel() {
                     : 'guest';
 
   // create the avatar circle
-  const img = document.createElement('img');
-  img.className = 'fid-avatar';
+const img = document.createElement('img');
+img.className = 'fid-avatar';
 
-  if (currentFid) {
-    // Farcaster profile pics come from cdn.farcaster.xyz
-    img.src = `https://cdn.farcaster.xyz/avatar/${currentFid}`;
-  } else {
-    // fallback pfp
-    img.src = 'https://cdn.farcaster.xyz/avatar/default';
-  }
+if (currentPfpUrl) {
+  img.src = currentPfpUrl;          // ✅ real avatar from SDK
+} else {
+  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjEyIiByPSI4IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuMiIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjEiLz48L3N2Zz4='; // simple white circle placeholder
+}
+
 
   // username text element
   const span = document.createElement('span');
@@ -90,13 +90,14 @@ async function initMiniAppUser() {
     const ctx = await sdkRef.context;
     console.log('Mini App context:', ctx);
 
-    if (ctx && ctx.user) {
-      currentFid = ctx.user.fid ?? null;
-      currentUsername = ctx.user.username ?? null;
-      console.log('Mini App user:', currentFid, currentUsername);
-    } else {
-      console.log('No user in Mini App context');
-    }
+if (ctx && ctx.user) {
+  currentFid = ctx.user.fid ?? null;
+  currentUsername = ctx.user.username ?? null;
+  currentPfpUrl = ctx.user.pfpUrl || null;   // 👈 use sdk’s avatar url if present
+  console.log('Mini App user:', currentFid, currentUsername, currentPfpUrl);
+} else {
+  console.log('No user in Mini App context');
+}
   } catch (e) {
     console.error('initMiniAppUser error', e);
   }
