@@ -411,6 +411,26 @@ function applyLevelSettings() {
   if (minesEl) minesEl.textContent = minesCount;
 }
 
+function updateHudTheme() {
+  const hud = document.getElementById('game-hud');
+  if (!hud) return;
+
+  hud.classList.remove('hud-normal', 'hud-daily', 'hud-hard');
+
+  // daily mode = blue glow
+  if (dailyMode || lastGameWasDaily) {
+    hud.classList.add('hud-daily');
+  }
+  // hard level (non-daily) = red glow
+  else if (currentLevel === 'hard') {
+    hud.classList.add('hud-hard');
+  }
+  // everything else = purple glow
+  else {
+    hud.classList.add('hud-normal');
+  }
+}
+
 // seed helpers for daily mode
 function xmur3(str) {
   let h = 1779033703 ^ str.length;
@@ -700,6 +720,7 @@ window.onload = function () {
       currentLevel = next;
       levelBtn.textContent = 'Level: ' + currentLevel;
       applyLevelSettings();
+      updateHudTheme();   // 👈 new
     });
   }
 
@@ -721,6 +742,7 @@ if (bestSpan) {
   bestSpan.textContent = v > 0 ? formatTime(v) : '--:--';
 }
 
+updateHudTheme();   // 👈 add this
 
       if (home && game) {
         home.style.display = 'none';
@@ -765,6 +787,8 @@ if (bestSpan) {
           bestSpan.textContent = '--:--';
         }
       }
+
+      updateHudTheme();   // 👈 add this
 
       if (home && game) {
         home.style.display = 'none';
@@ -824,6 +848,7 @@ if (bestSpan) {
       lastElapsedMs = 0;
       renderTimer(0);
       updateDailyProgress();
+      updateHudTheme();   // 👈 add this
     });
   }
 
@@ -909,6 +934,7 @@ function startGame() {
   applyLevelSettings();
   updateHintUI();
   updateDailyProgress();
+  updateHudTheme();   // 👈 add this
 
   const boardEl = document.getElementById('board');
   if (boardEl) boardEl.innerHTML = '';

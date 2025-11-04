@@ -35,7 +35,7 @@ body {
 #home-screen,
 #game-screen {
   background: radial-gradient(circle at top, rgba(124, 77, 255, 0.16), rgba(10, 10, 20, 0.96));
-  border-radius: 18px;
+  border-radius: 0 px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
   padding: 16px 14px;
@@ -56,13 +56,13 @@ body {
 
 .home-top-row {
   position: absolute;
-  top: 18px;
+  top: 25px;
   left: 0;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  padding: 0 22px;
 }
 #home-daily-summary {
   position: absolute;
@@ -249,6 +249,77 @@ button:active {
   --cell: 45px;
 }
 
+/* ---------- GAME HUD (LEVEL / MINES / TIME / BEST) ---------- */
+
+#game-hud {
+  width: 100%;
+  max-width: 340px;                 /* a bit tighter */
+  margin: 4px auto 6px;             /* horizontally centered */
+  transform: translateX(-8px);  /* 👈 shift left slightly */
+  padding: 9px 12px 11px;
+  border-radius: 16px;
+  background: radial-gradient(circle at top, rgba(10, 10, 25, 0.98), rgba(5, 5, 15, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.9);
+  font-size: 12px;
+
+  display: flex;                    /* center its contents */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+
+/* top row: LEVEL: medium */
+#game-hud .hud-top-row {
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-size: 14px;                  /* bigger title */
+}
+
+/* second row: three stats */
+#game-hud .hud-bottom-row {
+  display: flex;
+  justify-content: center;
+  gap: 14px;                         /* more space between pills */
+}
+
+/* individual stat pills */
+#game-hud .hud-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  font-size: 13px;                  /* bigger numbers */
+}
+
+#game-hud .hud-icon {
+  font-size: 16px;                  /* bigger emojis/icons */
+}
+
+/* theme glows */
+#game-hud.hud-normal {
+  border-color: rgba(183, 148, 255, 0.9);
+  box-shadow: 0 0 16px rgba(124, 77, 255, 0.85);
+}
+
+#game-hud.hud-daily {
+  border-color: rgba(0, 191, 255, 0.9);
+  box-shadow: 0 0 18px rgba(0, 191, 255, 0.95);
+}
+
+#game-hud.hud-hard {
+  border-color: rgba(255, 92, 92, 0.9);
+  box-shadow: 0 0 18px rgba(255, 80, 80, 0.95);
+}
+
+
 /* board container */
 #board {
   width: var(--board);
@@ -265,7 +336,7 @@ button:active {
     0 0 26px rgba(124, 77, 255, 0.9),
     0 20px 40px rgba(0, 0, 0, 0.9);
   margin: 0 auto;
-  transform: translateX(-15px);   /* tiny nudge to the left */
+  transform: translateX(-10px);   /* tiny nudge to the left */
 }
 
 
@@ -486,6 +557,7 @@ button:active {
 
 #daily-progress-label {
   font-size: 12px;
+  transform: translateX(-8px);  /* 👈 shift left slightly */
   opacity: 0.85;
   color: #f5f5ff;
 }
@@ -493,6 +565,7 @@ button:active {
 .daily-progress-bar {
   width: 100%;
   height: 6px;
+  transform: translateX(-8px);  /* 👈 shift left slightly */
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
   overflow: hidden;

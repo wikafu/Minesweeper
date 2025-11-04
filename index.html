@@ -95,12 +95,27 @@
   <!-- game screen -->
 <div id="game-screen" style='display:none; width:100%; height:100%;'>
 
-    <h1 style="margin-top:8px; font-size:18px; text-align:center;">
-      LEVEL: <span id="level-label">easy</span> |
-      MINES: <span id="mines-count">0</span> |
-      TIME: <span id="timer">00:00</span> |
-      BEST: <span id="best">--:--</span>
-    </h1>
+<div id="game-hud" class="hud-normal">
+  <div class="hud-top-row">
+    LEVEL: <span id="level-label">easy</span>
+  </div>
+
+  <div class="hud-bottom-row">
+    <div class="hud-stat">
+      <span class="hud-icon">💣</span>
+      <span id="mines-count">0</span>
+    </div>
+    <div class="hud-stat">
+      <span class="hud-icon">⏱</span>
+      <span id="timer">00:00</span>
+    </div>
+    <div class="hud-stat">
+      <span class="hud-icon">🏆</span>
+      <span id="best">--:--</span>
+    </div>
+  </div>
+</div>
+
 
     <!-- tiny daily progress bar (only used in Daily mode) -->
     <div id="daily-progress-wrap">
