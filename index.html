@@ -64,12 +64,18 @@
   <body>
 <main id="game-frame">
 
+    <!-- subtle drifting particles overlay -->
+  <div id="theme-particles"></div>
+
   <!-- home screen -->
 <div id="home-screen">
   <!-- top row: FID on left, Daily on right -->
   <div class="home-top-row">
     <div id="player-fid">guest</div>
-    <button id="daily-button">Daily Challenge</button>
+<button id="daily-button">
+  <span id="daily-label">Daily Challenge</span>
+  <span id="daily-charge-bar"></span>
+</button>
   </div>
 
   <!-- daily text in the top-middle -->
@@ -88,6 +94,8 @@
   <!-- buttons under the title -->
   <button id="level-button">Level: easy</button>
   <button id="start-button">Start</button>
+  <button id="music-toggle">🎵</button>
+  <button id="theme-button">🎨</button>
 </div>
 
 
@@ -133,8 +141,6 @@
       <button id="share" style="width:52px; height:44px; font-size:22px;">📤</button>
       <button id="mute" style="width:52px; height:44px; font-size:22px;">🔊</button>
     </div>
-
-
   </div>
 
 <!-- game over popup -->

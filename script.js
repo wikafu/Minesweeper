@@ -12,7 +12,112 @@ let gameOver = false;
 const MAX_HINTS = 3;
 let hintsLeft = MAX_HINTS;
 let dailyGlobalBestMs = 0;   // today's best daily time from the server
+let dailyFillEl = null;  // yellow charge bar inside Daily button
+let dailyLabelEl = null;  // text inside the Daily button
 
+
+// ---- Daily visual theme (home + game) ----
+const THEMES = ['neon', 'desert', 'frost', 'swamp', 'inferno'];
+const THEME_KEY = 'minesweeper:theme';  // remember user choice
+let currentTheme = null;
+
+function pickTodayTheme() {
+  const now = new Date();
+  const key =
+    now.getUTCFullYear() +
+    '-' +
+    (now.getUTCMonth() + 1) +
+    '-' +
+    now.getUTCDate();
+
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash * 31 + key.charCodeAt(i)) | 0;
+  }
+  const idx = Math.abs(hash) % THEMES.length;
+  return THEMES[idx];
+}
+
+function applyTheme(theme) {
+  const body = document.body;
+  THEMES.forEach((t) => body.classList.remove('theme-' + t));
+  body.classList.add('theme-' + theme);
+
+  // play theme music
+  playThemeLoop(theme);
+}
+
+// set + remember theme
+function setTheme(theme) {
+  currentTheme = theme;
+  applyTheme(theme);
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {}
+}
+
+// icon for the theme button
+function themeIcon(theme) {
+  switch (theme) {
+    case 'neon':    return '💜';
+    case 'desert':  return '🏜️';
+    case 'frost':   return '❄️';
+    case 'swamp':   return '🌿';
+    case 'inferno': return '🔥';
+    default:        return '🎨';
+  }
+}
+
+
+
+// ---- THEME MUSIC SYSTEM ----
+let currentMusic = null;
+
+function playThemeLoop(theme) {
+  // stop old music if playing
+  if (currentMusic) {
+    try {
+      currentMusic.pause();
+      currentMusic.currentTime = 0;
+    } catch {}
+  }
+
+  const path = `/media/theme-${theme}.mp3`;
+  const audio = new Audio(path);
+  audio.loop = true;
+
+  // use same base + volumeSteps as SFX
+  const v = volumeSteps[volumeStepIndex];      // 0, 0.33, 0.66, 1
+  audio.volume = BASE_MUSIC_VOL * v;
+  audio.muted  = (v === 0) || musicMuted;      // muted if global volume is 0 OR musicMuted is on
+
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {
+      console.log('User interaction needed before audio can autoplay');
+    });
+  }
+
+  currentMusic = audio;
+}
+
+
+// --- background music mute state ---
+let musicMuted = false;  // separate from SFX 'muted'
+
+function applyMusicMute() {
+  // mute / unmute the current theme music loop
+  if (currentMusic) {
+    currentMusic.muted = musicMuted;
+  }
+
+  // update the home-screen button
+  const btn = document.getElementById('music-toggle');
+  if (btn) {
+    btn.classList.toggle('muted', musicMuted);
+    btn.textContent = musicMuted ? '🔇' : '🎵';
+  }
+}
 
 // ---- Farcaster user (for leaderboard) ----
 let currentFid = null;
@@ -161,34 +266,64 @@ function startDailyCountdown(lastMs) {
   const btn = document.getElementById('daily-button');
   if (!btn) return;
 
+  const target = getNextResetTimeMs(lastMs);     // when it unlocks
+  const totalMs = target - lastMs;              // full cooldown length
+
+  // make sure we're in cooldown visual state
+  btn.classList.remove('ready');
+  btn.classList.add('cooldown');
+
   function tick() {
     const now = Date.now();
-    const target = getNextResetTimeMs(lastMs);
     const diff = target - now;
 
-    if (diff <= 0) {
-      // cooldown over, daily available again
-      clearDailyCountdown();
-      localStorage.removeItem(dailyLastKey);
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.textContent = 'Daily Challenge';
-      return;
-    }
+if (diff <= 0) {
+  clearDailyCountdown();
+  localStorage.removeItem(dailyLastKey);
+
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  if (dailyLabelEl) dailyLabelEl.textContent = 'Daily Challenge';
+  btn.classList.remove('cooldown');
+  btn.classList.add('ready');
+
+  if (dailyFillEl) {
+    dailyFillEl.style.width = '0%';
+    dailyFillEl.style.opacity = '0';
+  }
+  return;
+}
+
 
     const totalSec = Math.floor(diff / 1000);
     const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
     const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
     const s = String(totalSec % 60).padStart(2, '0');
 
-    btn.disabled = true;
-    btn.style.opacity = '0.7';
-    btn.textContent = `Next in ${h}:${m}:${s}`;
+    // numeric label
+btn.disabled = true;
+btn.style.opacity = '0.9';
+if (dailyLabelEl) {
+  dailyLabelEl.textContent = `Next in ${h}:${m}:${s}`;
+}
+
+
+    // how much of the cooldown is done? (0 → 100)
+const elapsedMs = totalMs - diff;
+const pct = Math.max(0, Math.min(100, Math.round((elapsedMs / totalMs) * 100)));
+
+// make the yellow glass overlay grow
+if (dailyFillEl) {
+  dailyFillEl.style.width = pct + '%';
+}
+
   }
 
   tick();
   dailyCountdownId = setInterval(tick, 1000);
 }
+
+
 
 // called on load and after a daily game ends
 function updateDailyButtonState() {
@@ -197,11 +332,23 @@ function updateDailyButtonState() {
 
   const lastMs = getLastDailyPlayedMs();
   if (!lastMs) {
-    // never played daily (or cooldown passed)
+    // never played daily (or cooldown already over)
     clearDailyCountdown();
     btn.disabled = false;
     btn.style.opacity = '1';
-    btn.textContent = 'Daily Challenge';
+
+    // put the text inside the label span instead of wiping the button
+    if (dailyLabelEl) {
+      dailyLabelEl.textContent = 'Daily Challenge';
+    }
+
+    btn.classList.remove('cooldown');
+    btn.classList.add('ready');           // glow when available
+
+        if (dailyFillEl) {
+      dailyFillEl.style.width = '0%';
+      dailyFillEl.style.opacity = '0';
+    }
     return;
   }
 
@@ -214,12 +361,21 @@ function updateDailyButtonState() {
     localStorage.removeItem(dailyLastKey);
     btn.disabled = false;
     btn.style.opacity = '1';
-    btn.textContent = 'Daily Challenge';
+
+    if (dailyLabelEl) {
+      dailyLabelEl.textContent = 'Daily Challenge';
+    }
+
+    btn.classList.remove('cooldown');
+    btn.classList.add('ready');
+
   } else {
-    // still on cooldown, show countdown
+    // still on cooldown → start countdown & charging bar
     startDailyCountdown(lastMs);
   }
 }
+
+
 
 // mark that we just finished today's daily run
 function markDailyPlayed() {
@@ -579,36 +735,76 @@ function useHint() {
 // sounds
 const sndClick = new Audio('./click.mp3');
 const sndBomb  = new Audio('./over.mp3');
-const sndWin = new Audio('./win.mp3');
-sndClick.volume = 0.6;
-sndBomb.volume  = 0.8;
-sndWin.volume = 0.7;
-let muted = false;
+const sndWin   = new Audio('./win.mp3');
+
+// base volumes for sfx
+const BASE_CLICK_VOL = 0.6;
+const BASE_BOMB_VOL  = 0.5;
+const BASE_WIN_VOL   = 0.5;
+const BASE_MUSIC_VOL = 0.4;   // matches your theme music loop volume
+
+sndClick.volume = BASE_CLICK_VOL;
+sndBomb.volume  = BASE_BOMB_VOL;
+sndWin.volume   = BASE_WIN_VOL;
+
+// master volume steps (0 = mute, 1 = full)
+let volumeStepIndex = 3;                // start at max
+const volumeSteps = [0, 0.33, 0.66, 1]; // 🔇, 🔈, 🔉, 🔊
 
 
 function playClick() {
-  if (!muted) {
-    try {
-      sndClick.currentTime = 0;
-      sndClick.play();
-    } catch {}
-  }
+  try {
+    sndClick.currentTime = 0;
+    sndClick.play();
+  } catch {}
 }
+
 function playBomb() {
-  if (!muted) {
-    try {
-      sndBomb.currentTime = 0;
-      sndBomb.play();
-    } catch {}
-  }
+  try {
+    sndBomb.currentTime = 0;
+    sndBomb.play();
+  } catch {}
 }
 
 function playWin() {
-  if (!muted) {
-    try {
-      sndWin.currentTime = 0;
-      sndWin.play();
-    } catch {}
+  try {
+    sndWin.currentTime = 0;
+    sndWin.play();
+  } catch {}
+}
+
+function getVolumeIcon(level) {
+  if (level === 0) return '🔇';
+  if (level < 0.5) return '🔈';
+  if (level < 0.9) return '🔉';
+  return '🔊';
+}
+
+function applyVolume() {
+  const v = volumeSteps[volumeStepIndex];
+
+  // update sfx volumes
+  sndClick.volume = BASE_CLICK_VOL * v;
+  sndBomb.volume  = BASE_BOMB_VOL  * v;
+  sndWin.volume   = BASE_WIN_VOL   * v;
+
+  const muteAll = v === 0;
+  sndClick.muted = muteAll;
+  sndBomb.muted  = muteAll;
+  sndWin.muted   = muteAll;
+
+  // also update theme music if it exists
+  if (typeof currentMusic !== 'undefined' && currentMusic) {
+    currentMusic.volume = BASE_MUSIC_VOL * v;
+    // music is muted if global volume is 0 OR user muted music on home
+    currentMusic.muted  = muteAll || musicMuted;
+  }
+
+
+  // update button icon
+  const muteBtn = document.getElementById('mute');
+  if (muteBtn) {
+    muteBtn.textContent = getVolumeIcon(v);
   }
 }
 
@@ -691,8 +887,20 @@ function showGameOverPopup(kind) {
   }
   }
 
-// main setup
 window.onload = function () {
+
+  // pick theme: saved one if exists, otherwise today's random
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem(THEME_KEY);
+  } catch {}
+
+  const initialTheme = (savedTheme && THEMES.includes(savedTheme))
+    ? savedTheme
+    : pickTodayTheme();
+
+  setTheme(initialTheme);
+
   // popup elements
   goOverlay  = document.getElementById('gameover-overlay');
   goTitle    = document.getElementById('go-title');
@@ -756,6 +964,14 @@ updateHudTheme();   // 👈 add this
   // daily challenge button
   const dailyBtn = document.getElementById('daily-button');
   if (dailyBtn) {
+        // grab the label span
+    dailyLabelEl = document.getElementById('daily-label');
+
+    // create the inner fill bar once
+    dailyFillEl = document.createElement('div');
+    dailyFillEl.id = 'daily-fill';
+    dailyBtn.appendChild(dailyFillEl);
+
     dailyBtn.addEventListener('click', () => {
       // if countdown is running, button is disabled -> do nothing
       if (dailyBtn.disabled) return;
@@ -788,7 +1004,7 @@ updateHudTheme();   // 👈 add this
         }
       }
 
-      updateHudTheme();   // 👈 add this
+      updateHudTheme();
 
       if (home && game) {
         home.style.display = 'none';
@@ -799,7 +1015,6 @@ updateHudTheme();   // 👈 add this
     });
   }
 
-
   // hint button
   const hintBtn = document.getElementById('hint');
   if (hintBtn) {
@@ -808,13 +1023,32 @@ updateHudTheme();   // 👈 add this
     });
   }
 
-  // mute button
-  const muteBtn = document.getElementById('mute');
-  if (muteBtn) {
-    muteBtn.addEventListener('click', () => {
-      muted = !muted;
-      [sndClick, sndBomb].forEach(s => s.muted = muted);
-      muteBtn.textContent = muted ? '🔇' : '🔊';
+// volume button (cycles 🔊 → 🔉 → 🔈 → 🔇)
+const muteBtn = document.getElementById('mute');
+if (muteBtn) {
+  muteBtn.addEventListener('click', () => {
+    volumeStepIndex = (volumeStepIndex + 1) % volumeSteps.length;
+    applyVolume();
+  });
+
+  // set initial icon & volume
+  applyVolume();
+}
+
+  // 🎨 theme button on home: cycles between themes
+  const themeBtn = document.getElementById('theme-button');
+  if (themeBtn) {
+    // set initial icon
+    themeBtn.textContent = themeIcon(initialTheme);
+
+    themeBtn.addEventListener('click', () => {
+      // move to next theme in the list
+      let idx = THEMES.indexOf(currentTheme);
+      if (idx === -1) idx = 0;
+      const next = THEMES[(idx + 1) % THEMES.length];
+
+      setTheme(next);
+      themeBtn.textContent = themeIcon(next);
     });
   }
 
@@ -882,6 +1116,16 @@ updateHudTheme();   // 👈 add this
 
   // set the correct daily button look on startup
   updateDailyButtonState();
+
+    // 🎵 Music button click handler
+  const musicBtn = document.getElementById('music-toggle');
+  if (musicBtn) {
+    musicBtn.addEventListener('click', () => {
+      musicMuted = !musicMuted;
+      applyMusicMute();
+    });
+    applyMusicMute();
+  }
 
     // load today's best daily time
   fetchDailyBest();
@@ -1005,6 +1249,7 @@ function clickTile() {
       dailyMode = false;
     }
 
+    pulseBoard('lose');          // 👈 NEW
     showGameOverPopup('lose');
     return;
   }
@@ -1028,6 +1273,24 @@ function revealMines() {
     }
   }
 }
+
+function pulseBoard(kind) {
+  const boardEl = document.getElementById('board');
+  if (!boardEl) return;
+
+  // remove old class so animation can retrigger
+  boardEl.classList.remove('board-pulse-win', 'board-pulse-lose');
+
+  // force reflow so CSS animation restarts
+  void boardEl.offsetWidth;
+
+  if (kind === 'win') {
+    boardEl.classList.add('board-pulse-win');
+  } else if (kind === 'lose') {
+    boardEl.classList.add('board-pulse-lose');
+  }
+}
+
 async function submitDailyResult(timeMs) {
   // use real Farcaster user if we have it, otherwise fall back
   const fid = currentFid != null ? currentFid : 0;
@@ -1108,6 +1371,7 @@ function checkMine(r, c) {
 
 
     updateHintUI();
+    pulseBoard('win');           // 👈 NEW
     playWin();
     showGameOverPopup('win');
   }
