@@ -51,7 +51,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;         /* 👈 start at the top */
-  gap: 16px;
+  gap: 25px;
   text-align: center;
   width: 100%;
   height: 100%;
@@ -102,7 +102,7 @@ body {
 /* big gradient title in the middle */
 #home-title {
   position: relative;                       /* so the glow bar can sit under it */
-  margin: 8px 0 22px;
+  margin: 8px 0 36px;
   font-size: 30px;
   font-weight: 900;
   letter-spacing: 0.22em;
@@ -191,6 +191,16 @@ button {
   background: linear-gradient(135deg, #7c4dff, #b794ff);
   color: #0c0418;
   box-shadow: 0 10px 24px rgba(124, 77, 255, 0.8);
+}
+
+/* tiny line under level that changes per difficulty */
+.level-tagline {
+  margin-top: 4px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  opacity: 0.8;
+  color: #e6e3ff;
+  text-shadow: 0 0 6px rgba(124, 77, 255, 0.6);
 }
 
 /* Daily button: white pill with charge bar + glow when ready */
@@ -288,6 +298,32 @@ button {
   animation: none;
 }
 
+/* tiny pop + glow when you tap Daily */
+#daily-button.daily-launch {
+  animation: dailyLaunch 0.25s ease-out;
+}
+
+@keyframes dailyLaunch {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.4),
+      0 0 6px rgba(255, 230, 150, 0.4);
+  }
+  60% {
+    transform: scale(1.06);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.7),
+      0 0 20px rgba(255, 230, 150, 1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.4),
+      0 0 6px rgba(255, 230, 150, 0.4);
+  }
+}
+
 /* in game buttons row */
 #flag-button,
 #hint,
@@ -350,6 +386,22 @@ button:active {
   text-align: center;
 }
 
+/* daily HUD intro animation */
+#game-hud.hud-daily-intro {
+  animation: hudDailyDrop 0.35s ease-out;
+}
+
+@keyframes hudDailyDrop {
+  0% {
+    transform: translate(-8px, -18px);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-8px, 0);  /* matches your normal HUD transform */
+    opacity: 1;
+  }
+}
+
 
 /* top row: LEVEL: medium */
 #game-hud .hud-top-row {
@@ -400,6 +452,27 @@ button:active {
   box-shadow: 0 0 18px rgba(255, 80, 80, 0.95);
 }
 
+#game-hud.hud-insane {
+  border-color: rgba(255, 40, 40, 0.95);
+  box-shadow:
+    0 0 22px rgba(255, 0, 0, 0.95),
+    0 0 40px rgba(255, 50, 50, 0.9);
+  animation: insanePulse 1.2s ease-in-out infinite;
+}
+
+@keyframes insanePulse {
+  0%, 100% {
+    box-shadow:
+      0 0 18px rgba(255, 0, 0, 0.8),
+      0 0 34px rgba(255, 60, 60, 0.7);
+  }
+  50% {
+    box-shadow:
+      0 0 28px rgba(255, 0, 0, 1),
+      0 0 44px rgba(255, 40, 40, 1);
+  }
+}
+
 
 /* board container */
 #board {
@@ -423,6 +496,27 @@ button:active {
 #board {
   margin-bottom: 35px; /* 👈 add some space below the board */
 }
+
+/* daily board intro pop */
+#board.board-daily-intro {
+  animation: boardDailyIntro 0.3s ease-out;
+}
+
+@keyframes boardDailyIntro {
+  0% {
+    transform: translateX(-10px) scale(0.96);
+    opacity: 0;
+  }
+  70% {
+    transform: translateX(-10px) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-10px) scale(1);
+    opacity: 1;
+  }
+}
+
 
 /* board win/lose pulse */
 #board.board-pulse-win {

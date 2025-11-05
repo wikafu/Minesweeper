@@ -225,11 +225,22 @@ if (ctx && ctx.user) {
 
 // difficulty levels
 const levels = {
-  easy:   { mines: 10 },
-  medium: { mines: 18 },
-  hard:   { mines: 26 },
+  easy:   { mines: 8 },   // relaxing, usually beatable  
+  medium: { mines: 14 },  // tension but fair  
+  hard:   { mines: 20 },  // real challenge — ~30% clear rate  
+  insane: { mines: 28 }
 };
-const levelOrder = ['easy', 'medium', 'hard'];
+
+const levelOrder = ['easy', 'medium', 'hard', 'insane'];
+
+// short descriptions shown under the Level button
+const levelTaglines = {
+  easy:   'Warm-up board. Breathe.',
+  medium: 'Real game starts here.',
+  hard:   'Only about 1 in 3 make it.',
+  insane: 'You asked for pain. Good luck.'
+};
+
 let currentLevel = 'easy';
 
 // daily challenge state
@@ -640,12 +651,21 @@ function stopTimer() {
 function applyLevelSettings() {
   minesCount = levels[currentLevel].mines;
 
+  // in-game HUD label
   const label = document.getElementById('level-label');
   if (label) label.textContent = currentLevel;
 
+  // mines left display
   const minesEl = document.getElementById('mines-count');
   if (minesEl) minesEl.textContent = minesCount;
+
+  // home-screen tagline under Level button
+  const tag = document.getElementById('level-tagline');
+  if (tag && levelTaglines[currentLevel]) {
+    tag.textContent = levelTaglines[currentLevel];
+  }
 }
+
 
 function updateHudTheme() {
   const hud = document.getElementById('game-hud');
@@ -658,9 +678,14 @@ function updateHudTheme() {
     hud.classList.add('hud-daily');
   }
   // hard level (non-daily) = red glow
-  else if (currentLevel === 'hard') {
-    hud.classList.add('hud-hard');
-  }
+else if (currentLevel === 'hard') {
+  hud.classList.add('hud-hard');
+} 
+else if (currentLevel === 'insane') {
+  hud.classList.add('hud-insane');
+}
+
+
   // everything else = purple glow
   else {
     hud.classList.add('hud-normal');
@@ -1006,7 +1031,14 @@ window.onload = function () {
       const idx = levelOrder.indexOf(currentLevel);
       const next = levelOrder[(idx + 1) % levelOrder.length];
       currentLevel = next;
-      levelBtn.textContent = 'Level: ' + currentLevel;
+
+        // skull emoji only for insane
+  if (currentLevel === 'insane') {
+    levelBtn.textContent = 'Level: 💀 insane';
+  } else {
+    levelBtn.textContent = 'Level: ' + currentLevel;
+  }
+
       applyLevelSettings();
       updateHudTheme();   // 👈 new
     });
@@ -1057,6 +1089,10 @@ updateHudTheme();   // 👈 add this
     dailyBtn.addEventListener('click', () => {
       // if countdown is running, button is disabled -> do nothing
       if (dailyBtn.disabled) return;
+
+            // tiny launch pop animation
+      dailyBtn.classList.add('daily-launch');
+      setTimeout(() => dailyBtn.classList.remove('daily-launch'), 260);
 
       // pick today's level from the date (same for everyone)
       const todaysLevel = pickDailyLevelForToday();
@@ -1353,7 +1389,24 @@ function startGame() {
     flagBtn.addEventListener('click', setFlag);
     flagBtn._wired = true;
   }
+    // special intro animations for daily games
+  if (lastGameWasDaily) {
+    const hud = document.getElementById('game-hud');
+    const boardEl = document.getElementById('board');
+
+    if (hud) {
+      hud.classList.add('hud-daily-intro');
+      // remove class after animation so it can play again next time
+      setTimeout(() => hud.classList.remove('hud-daily-intro'), 400);
+    }
+
+    if (boardEl) {
+      boardEl.classList.add('board-daily-intro');
+      setTimeout(() => boardEl.classList.remove('board-daily-intro'), 350);
+    }
+  }
 }
+
 
 function setFlag() {
   const flagBtn = document.getElementById('flag-button');
