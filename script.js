@@ -492,9 +492,14 @@ async function fetchDailyBest() {
   const label = document.getElementById('daily-best');
   if (!label) return;
 
+  // make sure base banner class is present
+  label.classList.add('daily-best-banner');
+
   try {
     const res = await fetch('/api/daily-best', { cache: 'no-store' });
     if (!res.ok) {
+      label.classList.remove('gold');
+      label.classList.add('silver');
       label.textContent = 'No one cleared today. Be the first. 👀';
       dailyGlobalBestMs = 0;
       return;
@@ -502,6 +507,8 @@ async function fetchDailyBest() {
 
     const data = await res.json();
     if (!data.best) {
+      label.classList.remove('gold');
+      label.classList.add('silver');
       label.textContent = 'No one cleared today. Be the first. 👀';
       dailyGlobalBestMs = 0;
       return;
@@ -511,12 +518,14 @@ async function fetchDailyBest() {
     const username = best.username || 'player';
     const timeMs = Number(best.timeMs || 0);
 
-    dailyGlobalBestMs = timeMs; // 👈 remember today’s winner time
+    dailyGlobalBestMs = timeMs;
 
-    // text on home screen
-    label.textContent = `👑 Best Today: @${username} – ${formatTime(timeMs)}`;
+    // winner state: gold glow
+    label.classList.remove('silver');
+    label.classList.add('gold');
+    label.textContent = `🏆 Best today: @${username} – ${formatTime(timeMs)}`;
 
-    // if we are currently in daily mode, also update the header BEST
+    // also update in game BEST when you are in daily mode
     if (dailyMode || lastGameWasDaily) {
       const bestSpan = document.getElementById('best');
       if (bestSpan) {
@@ -529,25 +538,13 @@ async function fetchDailyBest() {
     }
   } catch (e) {
     console.error('fetchDailyBest error', e);
-    const labelSafe = document.getElementById('daily-best');
-    if (labelSafe) {
-      labelSafe.textContent = 'No one cleared today. Be the first. 👀';
-    }
+    label.classList.remove('gold');
+    label.classList.add('silver');
+    label.textContent = 'No one cleared today. Be the first. 👀';
     dailyGlobalBestMs = 0;
   }
 }
 
-const banner = document.getElementById('daily-best-banner');
-
-if (bestExists) {
-  banner.classList.remove('silver');
-  banner.classList.add('gold');
-  banner.textContent = `🏆 ${time} by @${fid}`;
-} else {
-  banner.classList.remove('gold');
-  banner.classList.add('silver');
-  banner.textContent = 'No one cleared today. Be the first 👀';
-}
 
 function startTimer() {
   if (timerRunning) return;
