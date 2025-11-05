@@ -23,6 +23,6 @@
     "ogImageUrl": "https://minesweeper-nine-mocha.vercel.app/og.png"
   },
   "baseBuilder": {
-    "ownerAddress": "0xYOUR_OWNER_ADDRESS"
+    "ownerAddress": "0x958838040B31d98e2FFEeA55a14c9581C0ea0e83"
   }
 }

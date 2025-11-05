@@ -1052,18 +1052,19 @@ if (muteBtn) {
     });
   }
 
-  // share button in game
-  const shareBtn = document.getElementById('share');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
-      try {
-        await sdk.actions.composeCast({
-          text: 'cleared Minesweeper in ' + document.getElementById('best').textContent + ' - beat me',
-          embeds: [{ url: location.origin }]
-        });
-      } catch {}
-    });
-  }
+
+// share button in game
+const shareBtn = document.getElementById('share');
+if (shareBtn) {
+  shareBtn.addEventListener('click', async () => {
+    try {
+      await sdk.actions.composeCast({
+        text: `💣 cleared Minesweeper in ${document.getElementById('best').textContent}! Play here: https://farcaster.xyz/miniapps/0fX1N8Evb5Lg/minesweeper`,
+        embeds: [{ url: 'https://farcaster.xyz/miniapps/0fX1N8Evb5Lg/minesweeper' }]
+      });
+    } catch {}
+  });
+}
 
   // popup home
   if (goHome) {
@@ -1100,19 +1101,19 @@ if (muteBtn) {
     });
   }
 
-  // popup share
-  if (goShare) {
-    goShare.addEventListener('click', async () => {
-      try {
-        const level = currentLevel;
-        const time = formatTime(lastElapsedMs);
-        await sdk.actions.composeCast({
-          text: '🧩 cleared Minesweeper (' + level + ') in ' + time + '!',
-          embeds: [{ url: location.origin }]
-        });
-      } catch {}
-    });
-  }
+// popup share
+if (goShare) {
+  goShare.addEventListener('click', async () => {
+    try {
+      const level = currentLevel;
+      const time = formatTime(lastElapsedMs);
+      await sdk.actions.composeCast({
+        text: `🧩 cleared Minesweeper (${level}) in ${time}! Play here: https://farcaster.xyz/miniapps/0fX1N8Evb5Lg/minesweeper`,
+        embeds: [{ url: 'https://farcaster.xyz/miniapps/0fX1N8Evb5Lg/minesweeper' }]
+      });
+    } catch {}
+  });
+}
 
   // set the correct daily button look on startup
   updateDailyButtonState();
