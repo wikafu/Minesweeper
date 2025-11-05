@@ -523,7 +523,20 @@ async function fetchDailyBest() {
     // winner state: gold glow
     label.classList.remove('silver');
     label.classList.add('gold');
-    label.textContent = `🏆 Best today: @${username} – ${formatTime(timeMs)}`;
+const lines = [
+  `🏁 Fastest clear: @${username} — ${formatTime(timeMs)}`,
+  `🔥 Top run today — @${username} in ${formatTime(timeMs)}`,
+  `⚡ @${username} leads with ${formatTime(timeMs)}`,
+  `🥇 ${formatTime(timeMs)} — @${username} holds the crown`,
+  `💣 @${username} defused it in ${formatTime(timeMs)} — beat that`,
+  `🚀 @${username} is on top — ${formatTime(timeMs)} flat`,
+  `🏆 Today’s #1: @${username} — ${formatTime(timeMs)}`,
+  `⚔️ ${formatTime(timeMs)} by @${username} — reigning champ`
+];
+
+// pick one based on today’s date (so everyone sees the same for the day)
+const dayIndex = new Date().getUTCDate() % lines.length;
+label.textContent = lines[dayIndex];
 
     // also update in game BEST when you are in daily mode
     if (dailyMode || lastGameWasDaily) {
