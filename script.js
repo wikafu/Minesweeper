@@ -101,6 +101,15 @@ function playThemeLoop(theme) {
   currentMusic = audio;
 }
 
+function ensureThemeMusic() {
+  if (!currentTheme) return;
+
+  // if no music yet or it is paused, start the current theme loop
+  if (!currentMusic || currentMusic.paused) {
+    playThemeLoop(currentTheme);
+  }
+}
+
 
 // --- background music mute state ---
 let musicMuted = false;  // separate from SFX 'muted'
@@ -498,20 +507,53 @@ async function fetchDailyBest() {
   try {
     const res = await fetch('/api/daily-best', { cache: 'no-store' });
     if (!res.ok) {
-      label.classList.remove('gold');
-      label.classList.add('silver');
-      label.textContent = 'No one cleared today. Be the first. 👀';
-      dailyGlobalBestMs = 0;
-      return;
+label.classList.remove('gold');
+label.classList.add('silver');
+
+// new funny & competitive lines
+const emptyLines = [
+  "No survivors yet. You volunteering? 😏",
+  "The board’s undefeated today. Change that. 💣",
+  "Zero clears. Infinite shame. Fix it. 😤",
+  "No one brave enough… yet. 💀",
+  "Leaderboard still empty. Go write your name on it. 🏆",
+  "Everyone’s scared of today’s board. Are you? 😈",
+  "No clears, no glory. Step up. ⚔️",
+  "The mines are bored. Give them a reason to explode. 💥"
+];
+
+// pick one based on today's date (so everyone sees the same line)
+const dayIndex = new Date().getUTCDate() % emptyLines.length;
+label.textContent = emptyLines[dayIndex];
+
+dailyGlobalBestMs = 0;
+return;
     }
 
     const data = await res.json();
     if (!data.best) {
-      label.classList.remove('gold');
-      label.classList.add('silver');
-      label.textContent = 'No one cleared today. Be the first. 👀';
-      dailyGlobalBestMs = 0;
-      return;
+label.classList.remove('gold');
+label.classList.add('silver');
+
+// new funny & competitive lines
+const emptyLines = [
+  "No survivors yet. You volunteering? 😏",
+  "The board’s undefeated today. Change that. 💣",
+  "Zero clears. Infinite shame. Fix it. 😤",
+  "No one brave enough… yet. 💀",
+  "Leaderboard still empty. Go write your name on it. 🏆",
+  "Everyone’s scared of today’s board. Are you? 😈",
+  "No clears, no glory. Step up. ⚔️",
+  "The mines are bored. Give them a reason to explode. 💥"
+];
+
+// pick one based on today's date (so everyone sees the same line)
+const dayIndex = new Date().getUTCDate() % emptyLines.length;
+label.textContent = emptyLines[dayIndex];
+
+dailyGlobalBestMs = 0;
+return;
+
     }
 
     const best = data.best;
@@ -551,10 +593,27 @@ label.textContent = lines[dayIndex];
     }
   } catch (e) {
     console.error('fetchDailyBest error', e);
-    label.classList.remove('gold');
-    label.classList.add('silver');
-    label.textContent = 'No one cleared today. Be the first. 👀';
-    dailyGlobalBestMs = 0;
+label.classList.remove('gold');
+label.classList.add('silver');
+
+// new funny & competitive lines
+const emptyLines = [
+  "No survivors yet. You volunteering? 😏",
+  "The board’s undefeated today. Change that. 💣",
+  "Zero clears. Infinite shame. Fix it. 😤",
+  "No one brave enough… yet. 💀",
+  "Leaderboard still empty. Go write your name on it. 🏆",
+  "Everyone’s scared of today’s board. Are you? 😈",
+  "No clears, no glory. Step up. ⚔️",
+  "The mines are bored. Give them a reason to explode. 💥"
+];
+
+// pick one based on today's date (so everyone sees the same line)
+const dayIndex = new Date().getUTCDate() % emptyLines.length;
+label.textContent = emptyLines[dayIndex];
+
+dailyGlobalBestMs = 0;
+return;
   }
 }
 
@@ -977,6 +1036,8 @@ updateHudTheme();   // 👈 add this
         home.style.display = 'none';
         game.style.display = 'flex';
       }
+
+      ensureThemeMusic();
       startGame();
     });
   }
@@ -1118,6 +1179,8 @@ if (shareBtn) {
         home.style.display = 'none';
         game.style.display = 'flex';
       }
+
+      ensureThemeMusic();
       startGame();
     });
   }
@@ -1147,6 +1210,31 @@ if (goShare) {
       applyMusicMute();
     });
     applyMusicMute();
+  }
+
+    // instructions popup
+  const instrBtn = document.getElementById('instructions-button');
+  const instrOverlay = document.getElementById('instructions-overlay');
+  const instrClose = document.getElementById('instr-close');
+
+  if (instrBtn && instrOverlay) {
+    instrBtn.addEventListener('click', () => {
+      instrOverlay.style.display = 'flex';
+    });
+  }
+
+  if (instrClose && instrOverlay) {
+    instrClose.addEventListener('click', () => {
+      instrOverlay.style.display = 'none';
+    });
+  }
+
+  // also close instructions if user taps backdrop
+  const instrBackdrop = document.querySelector('.instr-backdrop');
+  if (instrBackdrop && instrOverlay) {
+    instrBackdrop.addEventListener('click', () => {
+      instrOverlay.style.display = 'none';
+    });
   }
 
     // load today's best daily time

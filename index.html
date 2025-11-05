@@ -92,14 +92,17 @@
   <h1 id="home-title">MINESWEEPER</h1>
 
   <!-- buttons under the title -->
-  <button id="level-button">Level: easy</button>
-  <button id="start-button">Start</button>
-  <button id="connect-wallet">Connect Wallet</button>
+<button id="level-button">Level: easy</button>
+<button id="start-button">Start</button>
+<button id="connect-wallet">Connect Wallet</button>
 <span id="wallet-address" style="display:none; font-size:13px; opacity:0.8;"></span>
-  <button id="music-toggle">🎵</button>
-  <button id="theme-button">🎨</button>
-</div>
 
+<div id="home-bottom-buttons">
+  <button id="music-toggle" class="round-icon-btn">🎵</button>
+  <button id="instructions-button" class="round-icon-btn">❔</button>
+  <button id="theme-button" class="round-icon-btn">🎨</button>
+</div>
+</div>
 
 
   <!-- game screen -->
@@ -137,7 +140,7 @@
     
     <div id="board"></div>
 
-    <div style="display:flex; gap:10px; justify-content:center; margin-bottom:8px;">
+   <div style="display:flex; gap:12px; justify-content:center; margin-top:-10px;">
       <button id="flag-button" aria-label="toggle flag" style="width:96px; height:44px; font-size:26px;">🚩</button>
       <button id="hint" style="width:75px; height:44px; font-size:20px;">💡3</button>
       <button id="share" style="width:52px; height:44px; font-size:22px;">📤</button>
@@ -164,6 +167,46 @@
   </div>
 </div>
 
+
+<!-- instructions popup -->
+<div id="instructions-overlay">
+  <div class="instr-backdrop"></div>
+  <div class="instr-card">
+    <h2>How to play</h2>
+    <p>
+      Tap tiles to reveal the board.  
+      Numbers show how many mines touch that tile.  
+      Use the flag button to mark suspected mines and clear all safe tiles to win.
+    </p>
+
+    <p>
+      You can practice on three levels - easy, medium, and hard.  
+      Change the level on the home screen then hit Start to play a normal run.
+    </p>
+
+    <h3>Daily challenge</h3>
+    <p>
+      Daily Challenge gives one shared board per day for everyone.  
+      The level is picked automatically for the day and the layout is the same for all players.
+    </p>
+    <p>
+      You get one real attempt per day - if you lose or win, the button locks until the next reset.  
+      The gold banner on the home shows the fastest clear today with the players Farcaster handle.
+    </p>
+
+    <h3>Tips</h3>
+    <ul>
+      <li>💡 Use hints to reveal a random safe tile when you are stuck.</li>
+      <li>🚩 Place flags on tiles you are sure are mines so you do not tap them by mistake.</li>
+      <li>⏱ Faster clears help you climb the daily best times.</li>
+      <li>🎵 Use the volume and music buttons to control sound.</li>
+      <li>🎨 Switch themes to change the look and background music.</li>
+      <li>📤 Share your clears directly to Farcaster from the in game share button.</li>
+    </ul>
+
+    <button id="instr-close">Got it</button>
+  </div>
+</div>
 
 </main>
 

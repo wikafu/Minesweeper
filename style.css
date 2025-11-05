@@ -420,6 +420,10 @@ button:active {
   transform: translateX(-10px);   /* tiny nudge to the left */
 }
 
+#board {
+  margin-bottom: 35px; /* 👈 add some space below the board */
+}
+
 /* board win/lose pulse */
 #board.board-pulse-win {
   animation: boardPulseWin 0.45s ease-out;
@@ -915,9 +919,6 @@ body.theme-inferno #theme-particles::after {
 }
 /* 🎵 Music toggle button at bottom-right of home screen */
 #music-toggle {
-  position: absolute;
-  right: 18px;
-  bottom: 18px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -938,9 +939,6 @@ body.theme-inferno #theme-particles::after {
 
 /* 🎨 Theme cycle button at bottom-left of home screen */
 #theme-button {
-  position: absolute;
-  left: 18px;
-  bottom: 18px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -1000,4 +998,101 @@ body.theme-inferno #theme-particles::after {
 }
 #connect-wallet:hover {
   background: #333;
+}
+
+#home-bottom-buttons {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+}
+
+/* shared style for the 3 round buttons */
+.round-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: rgba(10, 10, 10, 0.9);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+}
+
+/* optional hover */
+.round-icon-btn:hover {
+  background: rgba(20, 20, 20, 0.9);
+}
+
+
+
+/* instructions overlay */
+#instructions-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;           /* hidden by default */
+  justify-content: center;
+  align-items: center;
+  z-index: 40;
+}
+
+.instr-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.instr-card {
+  position: relative;
+  max-width: 320px;
+  max-height: 80vh;
+  background: rgba(10, 10, 10, 0.95);
+  border-radius: 16px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+  overflow-y: auto;
+  z-index: 41;
+  font-size: 14px;
+}
+
+.instr-card h2 {
+  font-size: 18px;
+  margin: 0 0 8px 0;
+}
+
+.instr-card h3 {
+  font-size: 15px;
+  margin: 12px 0 4px 0;
+}
+
+.instr-card p {
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.instr-card ul {
+  padding-left: 18px;
+  margin: 6px 0 10px 0;
+}
+
+.instr-card li {
+  margin-bottom: 4px;
+}
+
+#instr-close {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px 0;
+  border-radius: 10px;
+  border: none;
+  background: #5a3cff;
+  color: #fff;
+  font-size: 15px;
 }
