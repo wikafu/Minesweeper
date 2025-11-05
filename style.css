@@ -988,3 +988,16 @@ body.theme-inferno #theme-particles::after {
       0 0 30px rgba(255, 215, 0, 0.8);
   }
 }
+#connect-wallet {
+  margin-top: 4px;
+  background: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 8px;
+  font-size: 15px;
+  padding: 8px 16px;
+  transition: background 0.2s;
+}
+#connect-wallet:hover {
+  background: #333;
+}

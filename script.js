@@ -1154,6 +1154,46 @@ if (goShare) {
 
     // load your personal daily best (local)
   loadYourDailyBest();
+
+  // connect wallet button
+const walletBtn = document.getElementById('connect-wallet');
+const walletAddr = document.getElementById('wallet-address');
+
+if (walletBtn) {
+  walletBtn.addEventListener('click', async () => {
+    try {
+      if (!window.sdk || !window.sdk.wallet) {
+        alert('Wallet not available. Try opening in Farcaster Mini App.');
+        return;
+      }
+
+      const provider = await window.sdk.wallet.getEthereumProvider();
+      if (!provider) {
+        alert('No wallet provider found.');
+        return;
+      }
+
+      const accounts = await provider.request({ method: 'eth_requestAccounts' });
+      if (!accounts || accounts.length === 0) {
+        alert('Wallet connection canceled.');
+        return;
+      }
+
+      const address = accounts[0];
+      const short = address.slice(0, 6) + '...' + address.slice(-4);
+
+      walletBtn.textContent = 'Wallet Connected ✅';
+      walletAddr.textContent = short;
+      walletAddr.style.display = 'block';
+      walletBtn.disabled = true;
+
+      console.log('Wallet connected:', address);
+    } catch (err) {
+      console.error('Wallet connect error:', err);
+      alert('Failed to connect wallet.');
+    }
+  });
+}
 };
 
 // set mines, daily or random
