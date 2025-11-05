@@ -514,7 +514,7 @@ async function fetchDailyBest() {
     dailyGlobalBestMs = timeMs; // 👈 remember today’s winner time
 
     // text on home screen
-    label.textContent = `🏆 Best Today: @${username} – ${formatTime(timeMs)}`;
+    label.textContent = `👑 Best Today: @${username} – ${formatTime(timeMs)}`;
 
     // if we are currently in daily mode, also update the header BEST
     if (dailyMode || lastGameWasDaily) {
@@ -537,6 +537,17 @@ async function fetchDailyBest() {
   }
 }
 
+const banner = document.getElementById('daily-best-banner');
+
+if (bestExists) {
+  banner.classList.remove('silver');
+  banner.classList.add('gold');
+  banner.textContent = `🏆 ${time} by @${fid}`;
+} else {
+  banner.classList.remove('gold');
+  banner.classList.add('silver');
+  banner.textContent = 'No one cleared today. Be the first 👀';
+}
 
 function startTimer() {
   if (timerRunning) return;

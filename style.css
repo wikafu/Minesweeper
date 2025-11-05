@@ -954,3 +954,36 @@ body.theme-inferno #theme-particles::after {
   border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
 }
+.daily-best-banner {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+  font-size: 15px;
+  text-align: center;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* default (no clears yet) */
+.daily-best-banner.silver {
+  color: #b0b0b0;
+  text-shadow: 0 0 6px rgba(176, 176, 176, 0.4);
+}
+
+/* someone cleared (winner) */
+.daily-best-banner.gold {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5);
+  animation: pulseGold 2s ease-in-out infinite;
+}
+
+/* gentle pulse glow */
+@keyframes pulseGold {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 30px rgba(255, 215, 0, 0.8);
+  }
+}
