@@ -995,6 +995,76 @@ function showGameOverPopup(kind) {
   }
   }
 
+  // ---- Base tip helper (mandatory before starting a run) ----
+const TIP_ADDRESS = "0xaddres"; // 👈 replace with your real address
+
+async function requireBaseTip(actionLabel, buttonEl) {
+  // must be inside Farcaster mini app with wallet support
+  if (!window.sdk || !window.sdk.wallet) {
+    alert("Open in Farcaster Mini App to play (wallet required).");
+    return false;
+  }
+
+  let originalText = buttonEl.textContent;
+  let originalDisabled = buttonEl.disabled;
+
+  // show "waiting for tx..." state
+  buttonEl.disabled = true;
+  buttonEl.textContent = "Waiting for tx...";
+
+  try {
+    const provider = await window.sdk.wallet.getEthereumProvider();
+    if (!provider) {
+      alert("No wallet provider found.");
+      return false;
+    }
+
+    // ensure we have an account
+    const accounts = await provider.request({ method: "eth_requestAccounts" });
+    if (!accounts || accounts.length === 0) {
+      // user closed / refused account selection
+      return false;
+    }
+
+    const from = accounts[0];
+
+    // 0.00001 ETH in wei = 10^13 = 0x9184e72a000
+    const txHash = await provider.request({
+      method: "eth_sendTransaction",
+      params: [
+        {
+          from,
+          to: TIP_ADDRESS,
+          value: "0x9184e72a000", // 0.00001 ETH
+          chainId: "0x2105"       // Base mainnet
+        }
+      ]
+    });
+
+    console.log("Tip tx sent for", actionLabel, txHash);
+
+    // ✅ tx was sent (user confirmed, not rejected)
+    // we *could* wait for confirmations, but usually sending is enough.
+    return true;
+  } catch (err) {
+    console.error("Tip tx error:", err);
+
+    // user rejected in most wallets
+    if (err && (err.code === 4001 || err.code === "ACTION_REJECTED")) {
+      // just silently fail: no tx = no game start
+      return false;
+    }
+
+    // other error
+    alert("Transaction failed. Please try again.");
+    return false;
+  } finally {
+    // restore button state
+    buttonEl.disabled = originalDisabled;
+    buttonEl.textContent = originalText;
+  }
+}
+
 window.onload = function () {
 
   // pick theme: saved one if exists, otherwise today's random
@@ -1047,38 +1117,43 @@ window.onload = function () {
     });
   }
 
-  // start button normal mode
-  const startBtn = document.getElementById('start-button');
-  if (startBtn) {
-    startBtn.addEventListener('click', () => {
-      const home = document.getElementById('home-screen');
-      const game = document.getElementById('game-screen');
+// start button normal mode
+const startBtn = document.getElementById('start-button');
+if (startBtn) {
+  startBtn.addEventListener('click', async () => {
+    // 1) require tx first
+    const ok = await requireBaseTip('start-normal', startBtn);
+    if (!ok) {
+      // user rejected / wallet error → do nothing
+      return;
+    }
 
-      dailyMode = false;
-      dailySeed = '';
-      lastGameWasDaily = false;
+    const home = document.getElementById('home-screen');
+    const game = document.getElementById('game-screen');
 
-// BEST = your local best for this level (normal mode)
-const bestSpan = document.getElementById('best');
-if (bestSpan) {
-  const v = getCurrentLevelBestMs();
-  bestSpan.textContent = v > 0 ? formatTime(v) : '--:--';
+    dailyMode = false;
+    dailySeed = '';
+    lastGameWasDaily = false;
+
+    // BEST = your local best for this level (normal mode)
+    const bestSpan = document.getElementById('best');
+    if (bestSpan) {
+      const v = getCurrentLevelBestMs();
+      bestSpan.textContent = v > 0 ? formatTime(v) : '--:--';
+    }
+
+    updateHudTheme();
+
+    if (home && game) {
+      home.style.display = 'none';
+      game.style.display = 'flex';
+    }
+
+    ensureThemeMusic();
+    startGame();
+  });
 }
 
-updateHudTheme();   // 👈 add this
-
-      if (home && game) {
-        home.style.display = 'none';
-        game.style.display = 'flex';
-      }
-
-          // fire-and-forget Base tip (if wallet is connected)
-    sendBaseTip('start-normal');
-
-      ensureThemeMusic();
-      startGame();
-    });
-  }
 
 
   // daily challenge button
@@ -1092,54 +1167,58 @@ updateHudTheme();   // 👈 add this
     dailyFillEl.id = 'daily-fill';
     dailyBtn.appendChild(dailyFillEl);
 
-    dailyBtn.addEventListener('click', () => {
-      // if countdown is running, button is disabled -> do nothing
-      if (dailyBtn.disabled) return;
+dailyBtn.addEventListener('click', async () => {
+  // if countdown is running, button is disabled -> do nothing
+  if (dailyBtn.disabled) return;
 
-            // tiny launch pop animation
-      dailyBtn.classList.add('daily-launch');
-      setTimeout(() => dailyBtn.classList.remove('daily-launch'), 260);
+  // 1) require tx first
+  const ok = await requireBaseTip('daily-challenge', dailyBtn);
+  if (!ok) {
+    // user cancelled / failed tx → no daily run
+    return;
+  }
 
-      // pick today's level from the date (same for everyone)
-      const todaysLevel = pickDailyLevelForToday();
-      currentLevel = todaysLevel;
+  // tiny launch pop animation
+  dailyBtn.classList.add('daily-launch');
+  setTimeout(() => dailyBtn.classList.remove('daily-launch'), 260);
 
-      // update the level button text on home
-      if (levelBtn) {
-        levelBtn.textContent = 'Level: ' + currentLevel;
-      }
+  // pick today's level from the date (same for everyone)
+  const todaysLevel = pickDailyLevelForToday();
+  currentLevel = todaysLevel;
 
-      // apply mines & label for this level
-      applyLevelSettings();
+  // update the level button text on home
+  if (levelBtn) {
+    levelBtn.textContent = 'Level: ' + currentLevel;
+  }
 
-      const home = document.getElementById('home-screen');
-      const game = document.getElementById('game-screen');
+  // apply mines & label for this level
+  applyLevelSettings();
 
-      dailyMode = true;
-      dailySeed = getDailySeedString(); // date + current level
+  const home = document.getElementById('home-screen');
+  const game = document.getElementById('game-screen');
 
-      // BEST = today's winner time from server (or --:--)
-      const bestSpan = document.getElementById('best');
-      if (bestSpan) {
-        if (dailyGlobalBestMs > 0) {
-          bestSpan.textContent = formatTime(dailyGlobalBestMs);
-        } else {
-          bestSpan.textContent = '--:--';
-        }
-      }
+  dailyMode = true;
+  dailySeed = getDailySeedString(); // date + current level
 
-      updateHudTheme();
+  // BEST = today's winner time from server (or --:--)
+  const bestSpan = document.getElementById('best');
+  if (bestSpan) {
+    if (dailyGlobalBestMs > 0) {
+      bestSpan.textContent = formatTime(dailyGlobalBestMs);
+    } else {
+      bestSpan.textContent = '--:--';
+    }
+  }
 
-      if (home && game) {
-        home.style.display = 'none';
-        game.style.display = 'flex';
-      }
+  updateHudTheme();
 
-          // Base tip for daily run (if wallet connected)
-    sendBaseTip('daily-challenge');
+  if (home && game) {
+    home.style.display = 'none';
+    game.style.display = 'flex';
+  }
 
-      startGame();
-    });
+  startGame();
+});
   }
 
   // hint button
@@ -1214,24 +1293,28 @@ if (shareBtn) {
     });
   }
 
-  // popup replay
-  if (goReplay) {
-    goReplay.addEventListener('click', () => {
-      if (goOverlay) goOverlay.style.display = 'none';
-      const home = document.getElementById('home-screen');
-      const game = document.getElementById('game-screen');
-      if (home && game) {
-        home.style.display = 'none';
-        game.style.display = 'flex';
-      }
+// popup replay
+if (goReplay) {
+  goReplay.addEventListener('click', async () => {
+    // 1) require tx first
+    const ok = await requireBaseTip('replay', goReplay);
+    if (!ok) {
+      // cancelled → stay on popup
+      return;
+    }
 
-    // Base tip for replay (if wallet connected)
-    sendBaseTip('replay');
+    if (goOverlay) goOverlay.style.display = 'none';
+    const home = document.getElementById('home-screen');
+    const game = document.getElementById('game-screen');
+    if (home && game) {
+      home.style.display = 'none';
+      game.style.display = 'flex';
+    }
 
-      ensureThemeMusic();
-      startGame();
-    });
-  }
+    ensureThemeMusic();
+    startGame();
+  });
+}
 
 // popup share
 if (goShare) {
@@ -1335,53 +1418,6 @@ if (walletBtn) {
   });
 }
 };
-
-// send a tiny Base tip (0.00001 ETH) to a fixed address
-async function sendBaseTip(actionLabel) {
-  try {
-    // only send if wallet is connected
-    if (!baseProvider || !currentWalletAddress) {
-      console.log('No wallet connected; skipping tip for', actionLabel);
-      return;
-    }
-
-    const BASE_CHAIN_ID = '0x2105'; // Base mainnet
-    const TIP_ADDRESS = '0xaddres'; // 👈 REPLACE with your real address
-
-    // make sure we're on Base
-    let chainId = await baseProvider.request({ method: 'eth_chainId' });
-    if (chainId !== BASE_CHAIN_ID) {
-      try {
-        await baseProvider.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: BASE_CHAIN_ID }],
-        });
-        chainId = BASE_CHAIN_ID;
-      } catch (switchErr) {
-        console.warn('Could not switch to Base:', switchErr);
-        return;
-      }
-    }
-
-    // 0.00001 ETH in wei = 10000000000000 = 0x9184e72a000
-    const valueWeiHex = '0x9184e72a000';
-
-    await baseProvider.request({
-      method: 'eth_sendTransaction',
-      params: [
-        {
-          from: currentWalletAddress,
-          to: TIP_ADDRESS,
-          value: valueWeiHex,
-        },
-      ],
-    });
-
-    console.log('Tip sent for action:', actionLabel);
-  } catch (err) {
-    console.error('sendBaseTip error for ' + actionLabel, err);
-  }
-}
 
 // set mines, daily or random
 function setMines() {
