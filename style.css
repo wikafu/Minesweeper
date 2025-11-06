@@ -67,6 +67,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
+  gap: 8px;
 }
 #home-daily-summary {
   position: absolute;
@@ -281,16 +282,6 @@ button {
   opacity: 1;
 }
 
-/* when READY (clickable): soft glow pulse */
-#daily-button.ready {
-  animation: dailyPulse 1.4s ease-in-out infinite;
-}
-
-/* cooldown: no glow pulse */
-#daily-button.cooldown {
-  animation: none;
-}
-
 /* single, final dailyPulse definition */
 @keyframes dailyPulse {
   0% {
@@ -357,11 +348,12 @@ button {
 #daily-streak {
   text-align: center;
   font-style: italic;
-  font-size: 0.85rem;
+  font-size: 12px;          /* or 0.85rem if you prefer */
   margin-top: 4px;
   color: #ffdb8a;
   text-shadow: 0 0 6px rgba(255, 190, 70, 0.9);
   opacity: 0.9;
+  white-space: nowrap;
 }
 
 /* in game buttons row – unified white pills */
@@ -576,11 +568,9 @@ button:active {
   margin: 0 auto;
   transform: translateX(0px);
   position: relative;          /* needed for the daily halo */
-}
-
-#board {
   margin-bottom: 35px; /* 👈 add some space below the board */
 }
+
 
 /* Daily Challenge board - brighter cyan vibe */
 #board.board-daily {
@@ -860,46 +850,6 @@ button:active {
 }
 
 
-/* player username badge at top of home screen */
-#home-screen #player-fid {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px 6px 8px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #007aff, #00b0ff);
-  color: #fff;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  box-shadow: 0 0 10px rgba(0, 176, 255, 0.55);
-  height: 32px;
-}
-
-/* avatar inside the badge */
-#home-screen #player-fid .fid-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #fff;
-}
-
-
-/* avatar inside the badge */
-#home-screen #player-fid .fid-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #fff;
-}
-
-/* top row: let items share space nicely */
-.home-top-row {
-  gap: 8px;
-}
-
 /* username badge: allow shrinking & ellipsis */
 #home-screen #player-fid {
   flex: 0 1 45%;          /* can shrink, but not vanish */
@@ -907,33 +857,10 @@ button:active {
   white-space: nowrap;
 }
 
-/* the text part inside the badge */
-#home-screen #player-fid span {
-  display: inline-block;
-  max-width: 90px;        /* tune this if needed */
-  overflow: hidden;
-  text-overflow: ellipsis; /* … when too long */
-}
-
-/* streak text a bit smaller so it doesn’t dominate */
-#daily-streak {
-  font-size: 12px;
-  white-space: nowrap;
-}
-
 /* keep username from making the pill huge */
 #home-screen #player-fid {
   max-width: 150px;        /* cap overall badge width */
 }
-
-#home-screen #player-fid .fid-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100px;        /* space for text beside avatar */
-  display: block;
-}
-
 
 /* ---------- DAILY THEMES (background + card + board glow) ---------- */
 
@@ -1522,6 +1449,9 @@ position: static;
   flex: 0 0 auto;      /* ❗ no “take 45% of the row” */
   max-width: 120px;    /* hard cap */
   height: 28px;
+
+  border-radius: 999px;      /* 👈 smooth pill shape */
+  overflow: hidden;          /* optional, keeps avatar fully inside */
 
   background: linear-gradient(135deg, #007aff, #00b0ff);
   color: #fff;
