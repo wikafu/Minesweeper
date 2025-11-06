@@ -996,7 +996,7 @@ function showGameOverPopup(kind) {
   }
 
 // ---- Base tip helper (mandatory before starting a run) ----
-const TIP_ADDRESS = "0xaddres"; // 👈 put your real Base address here
+const TIP_ADDRESS = "0xcA1e6B80c545ee50A2941a5f062Be6956D3CeD6E"; // 👈 put your real Base address here
 
 async function requireBaseTip(actionLabel, buttonEl) {
   // must be inside Farcaster mini app with wallet support
