@@ -1475,3 +1475,12 @@ position: static;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+#home-screen #player-fid .fid-avatar {
+  border-radius: 50% !important;
+}
+/* make instructions scrollable on small screens */
+.instr-card {
+  overflow-y: auto;
+  max-height: 80vh;
+  -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+}

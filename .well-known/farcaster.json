@@ -6,7 +6,7 @@
   },
 "miniapp": {
   "version": "1",
-  "name": "MineQuest",
+  "name": "MineSweeper",
   "subtitle": "Flip tiles. Dodge bombs. Own the board.",
   "description": "A sleek Farcaster mini-game where every tap could be your last. Clear the grid, chase the daily challenge, and flex your best time.",
   "homeUrl": "https://minesweeper-nine-mocha.vercel.app",
@@ -18,7 +18,7 @@
   "splashImageUrl": "https://minesweeper-nine-mocha.vercel.app/og.png",
   "splashBackgroundColor": "#000000",
   "screenshotUrls": ["https://minesweeper-nine-mocha.vercel.app/screenshot-portrait.png"],
-  "ogTitle": "MineQuest",
+  "ogTitle": "MineSweeper",
   "ogDescription": "Flip tiles. Dodge bombs. Own the board.",
   "ogImageUrl": "https://minesweeper-nine-mocha.vercel.app/og.png"
 },
