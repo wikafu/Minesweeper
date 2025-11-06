@@ -15,6 +15,9 @@ let dailyGlobalBestMs = 0;   // today's best daily time from the server
 let dailyFillEl = null;  // yellow charge bar inside Daily button
 let dailyLabelEl = null;  // text inside the Daily button
 
+// Base wallet state (for sending tips)
+let baseProvider = null;
+let currentWalletAddress = null;
 
 // ---- Daily visual theme (home + game) ----
 const THEMES = ['neon', 'desert', 'frost', 'swamp', 'inferno'];
@@ -1069,6 +1072,9 @@ updateHudTheme();   // 👈 add this
         game.style.display = 'flex';
       }
 
+          // fire-and-forget Base tip (if wallet is connected)
+    sendBaseTip('start-normal');
+
       ensureThemeMusic();
       startGame();
     });
@@ -1128,6 +1134,9 @@ updateHudTheme();   // 👈 add this
         home.style.display = 'none';
         game.style.display = 'flex';
       }
+
+          // Base tip for daily run (if wallet connected)
+    sendBaseTip('daily-challenge');
 
       startGame();
     });
@@ -1216,6 +1225,9 @@ if (shareBtn) {
         game.style.display = 'flex';
       }
 
+    // Base tip for replay (if wallet connected)
+    sendBaseTip('replay');
+
       ensureThemeMusic();
       startGame();
     });
@@ -1279,7 +1291,7 @@ if (goShare) {
     // load your personal daily best (local)
   loadYourDailyBest();
 
-  // connect wallet button
+// connect wallet button
 const walletBtn = document.getElementById('connect-wallet');
 const walletAddr = document.getElementById('wallet-address');
 
@@ -1291,19 +1303,23 @@ if (walletBtn) {
         return;
       }
 
-      const provider = await window.sdk.wallet.getEthereumProvider();
-      if (!provider) {
+      // get EIP-1193 provider from Farcaster SDK
+      baseProvider = await window.sdk.wallet.getEthereumProvider();
+      if (!baseProvider) {
         alert('No wallet provider found.');
         return;
       }
 
-      const accounts = await provider.request({ method: 'eth_requestAccounts' });
+      // ask user to connect
+      const accounts = await baseProvider.request({ method: 'eth_requestAccounts' });
       if (!accounts || accounts.length === 0) {
         alert('Wallet connection canceled.');
         return;
       }
 
       const address = accounts[0];
+      currentWalletAddress = address; // 👈 remember for later sends
+
       const short = address.slice(0, 6) + '...' + address.slice(-4);
 
       walletBtn.textContent = 'Wallet Connected ✅';
@@ -1319,6 +1335,53 @@ if (walletBtn) {
   });
 }
 };
+
+// send a tiny Base tip (0.00001 ETH) to a fixed address
+async function sendBaseTip(actionLabel) {
+  try {
+    // only send if wallet is connected
+    if (!baseProvider || !currentWalletAddress) {
+      console.log('No wallet connected; skipping tip for', actionLabel);
+      return;
+    }
+
+    const BASE_CHAIN_ID = '0x2105'; // Base mainnet
+    const TIP_ADDRESS = '0xaddres'; // 👈 REPLACE with your real address
+
+    // make sure we're on Base
+    let chainId = await baseProvider.request({ method: 'eth_chainId' });
+    if (chainId !== BASE_CHAIN_ID) {
+      try {
+        await baseProvider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: BASE_CHAIN_ID }],
+        });
+        chainId = BASE_CHAIN_ID;
+      } catch (switchErr) {
+        console.warn('Could not switch to Base:', switchErr);
+        return;
+      }
+    }
+
+    // 0.00001 ETH in wei = 10000000000000 = 0x9184e72a000
+    const valueWeiHex = '0x9184e72a000';
+
+    await baseProvider.request({
+      method: 'eth_sendTransaction',
+      params: [
+        {
+          from: currentWalletAddress,
+          to: TIP_ADDRESS,
+          value: valueWeiHex,
+        },
+      ],
+    });
+
+    console.log('Tip sent for action:', actionLabel);
+  } catch (err) {
+    console.error('sendBaseTip error for ' + actionLabel, err);
+  }
+}
 
 // set mines, daily or random
 function setMines() {
