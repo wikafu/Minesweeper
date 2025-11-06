@@ -1464,7 +1464,7 @@ const supportOrb = document.getElementById('support-orb');
 if (supportOrb) {
   supportOrb.addEventListener('click', async () => {
     // 0.00075 ETH = 750000000000000 wei = 0x2aa1efb94e000
-    const coffeeValueHex = "0x9184e72a000";
+    const coffeeValueHex = "0x2aa05f2000000";
 
     const ok = await requireBaseTip('support-orb', supportOrb, coffeeValueHex);
     if (!ok) return; // cancelled or failed
