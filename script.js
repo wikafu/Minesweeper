@@ -166,12 +166,22 @@ if (currentPfpUrl) {
 }
 
 
-  // username text element
-  const span = document.createElement('span');
-  span.textContent = nameText;
 
-  el.appendChild(img);
-  el.appendChild(span);
+// username text element
+const span = document.createElement('span');
+span.className = 'fid-name';   // 👈 add a class
+
+// hard cap overlong labels
+let labelText = nameText;
+const MAX_LABEL_LEN = 14; // you can drop this to 10 if you want it tighter
+if (labelText.length > MAX_LABEL_LEN) {
+  labelText = labelText.slice(0, MAX_LABEL_LEN - 1) + '…';
+}
+
+span.textContent = labelText;
+
+el.appendChild(img);
+el.appendChild(span);
 }
 
 

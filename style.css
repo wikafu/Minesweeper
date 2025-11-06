@@ -895,6 +895,45 @@ button:active {
   background: #fff;
 }
 
+/* top row: let items share space nicely */
+.home-top-row {
+  gap: 8px;
+}
+
+/* username badge: allow shrinking & ellipsis */
+#home-screen #player-fid {
+  flex: 0 1 45%;          /* can shrink, but not vanish */
+  max-width: 45%;
+  white-space: nowrap;
+}
+
+/* the text part inside the badge */
+#home-screen #player-fid span {
+  display: inline-block;
+  max-width: 90px;        /* tune this if needed */
+  overflow: hidden;
+  text-overflow: ellipsis; /* … when too long */
+}
+
+/* streak text a bit smaller so it doesn’t dominate */
+#daily-streak {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* keep username from making the pill huge */
+#home-screen #player-fid {
+  max-width: 150px;        /* cap overall badge width */
+}
+
+#home-screen #player-fid .fid-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;        /* space for text beside avatar */
+  display: block;
+}
+
 
 /* ---------- DAILY THEMES (background + card + board glow) ---------- */
 
@@ -1472,4 +1511,37 @@ position: static;
   0%   { transform: translateY(0) scale(1); }
   40%  { transform: translateY(-2px) scale(1.05); }
   100% { transform: translateY(0) scale(1); }
+}
+/* compact username badge */
+#home-screen #player-fid {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 6px;
+
+  flex: 0 0 auto;      /* ❗ no “take 45% of the row” */
+  max-width: 120px;    /* hard cap */
+  height: 28px;
+
+  background: linear-gradient(135deg, #007aff, #00b0ff);
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 8px rgba(0, 176, 255, 0.55);
+}
+
+/* avatar a bit smaller */
+#home-screen #player-fid .fid-avatar {
+  width: 20px;
+  height: 20px;
+}
+
+/* text inside – ellipsis + small width */
+#home-screen #player-fid .fid-name {
+  display: inline-block;
+  max-width: 70px;      /* tune this: 60–80px range */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
