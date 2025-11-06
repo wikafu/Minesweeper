@@ -995,8 +995,8 @@ function showGameOverPopup(kind) {
   }
   }
 
-  // ---- Base tip helper (mandatory before starting a run) ----
-const TIP_ADDRESS = "0xaddres"; // 👈 replace with your real address
+// ---- Base tip helper (mandatory before starting a run) ----
+const TIP_ADDRESS = "0xaddres"; // 👈 put your real Base address here
 
 async function requireBaseTip(actionLabel, buttonEl) {
   // must be inside Farcaster mini app with wallet support
@@ -1005,8 +1005,8 @@ async function requireBaseTip(actionLabel, buttonEl) {
     return false;
   }
 
-  let originalText = buttonEl.textContent;
-  let originalDisabled = buttonEl.disabled;
+  const originalText = buttonEl.textContent;
+  const originalDisabled = buttonEl.disabled;
 
   // show "waiting for tx..." state
   buttonEl.disabled = true;
@@ -1041,17 +1041,21 @@ async function requireBaseTip(actionLabel, buttonEl) {
       ]
     });
 
-    console.log("Tip tx sent for", actionLabel, txHash);
+    console.log("Tip tx result for", actionLabel, txHash);
 
-    // ✅ tx was sent (user confirmed, not rejected)
-    // we *could* wait for confirmations, but usually sending is enough.
+    // 👇 IMPORTANT PART: if no hash (null/undefined/empty), treat as cancel
+    if (!txHash) {
+      console.warn("No tx hash returned, treating as cancelled.");
+      return false;
+    }
+
+    // ✅ real hash → user confirmed
     return true;
   } catch (err) {
     console.error("Tip tx error:", err);
 
     // user rejected in most wallets
     if (err && (err.code === 4001 || err.code === "ACTION_REJECTED")) {
-      // just silently fail: no tx = no game start
       return false;
     }
 
@@ -1064,6 +1068,7 @@ async function requireBaseTip(actionLabel, buttonEl) {
     buttonEl.textContent = originalText;
   }
 }
+
 
 window.onload = function () {
 
