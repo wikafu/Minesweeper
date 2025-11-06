@@ -1054,9 +1054,7 @@ function showGameOverPopup(kind) {
 const TIP_ADDRESS = "0xcA1e6B80c545ee50A2941a5f062Be6956D3CeD6E"; // your Base address
 
 async function requireBaseTip(actionLabel, buttonEl, overrideValueHex) {
-
-    // TEMP: disable transaction requirement for testing
-  return true;
+  
   // must be inside Farcaster mini app with wallet support
   if (!window.sdk || !window.sdk.wallet) {
     alert("Open in Farcaster Mini App to play (wallet required).");
