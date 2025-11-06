@@ -1045,6 +1045,7 @@ const TIP_ADDRESS = "0xcA1e6B80c545ee50A2941a5f062Be6956D3CeD6E"; // 👈 put yo
 
 async function requireBaseTip(actionLabel, buttonEl, overrideValueHex) {
 
+
   // must be inside Farcaster mini app with wallet support
   if (!window.sdk || !window.sdk.wallet) {
     alert("Open in Farcaster Mini App to play (wallet required).");
@@ -1455,7 +1456,7 @@ if (goShare) {
   if (supportOrb) {
     supportOrb.addEventListener('click', async () => {
       // 0.00005 ETH = 5e13 wei = 0x2d79883d2000
-      const coffeeValueHex = "0x2aa05f2000000";
+      const coffeeValueHex = "0x9184e72a000";
 
       const ok = await requireBaseTip('support-orb', supportOrb, coffeeValueHex);
       if (!ok) return;
