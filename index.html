@@ -73,9 +73,11 @@
   <div class="home-top-row">
     <div id="player-fid">guest</div>
 <button id="daily-button">
-  <span id="daily-label">Daily Challenge</span>
+  <span id="daily-label">📅⚡ Daily Challenge</span>
   <span id="daily-charge-bar"></span>
 </button>
+<!-- add this right below -->
+<div id="daily-streak">Streak: 🔥 0</div>
   </div>
 
   <!-- daily text in the top-middle -->
@@ -101,6 +103,10 @@
 <span id="wallet-address" style="display:none; font-size:13px; opacity:0.8;"></span>
 
 <div id="home-bottom-buttons">
+  <button id="support-orb">
+  <span class="orb-emoji">☕</span>
+  <span class="orb-text">Buy me a coffee</span>
+</button>
   <button id="music-toggle" class="round-icon-btn">🎵</button>
   <button id="instructions-button" class="round-icon-btn">❔</button>
   <button id="theme-button" class="round-icon-btn">🎨</button>
@@ -146,7 +152,7 @@
    <div style="display:flex; gap:12px; justify-content:center; margin-top:-10px;">
       <button id="flag-button" aria-label="toggle flag" style="width:96px; height:44px; font-size:26px;">🚩</button>
       <button id="hint" style="width:75px; height:44px; font-size:20px;">💡3</button>
-      <button id="share" style="width:52px; height:44px; font-size:22px;">📤</button>
+      <button id="power" class="control-button" style="width:75px; height:44px; font-size:20px;">📡</button>
       <button id="mute" style="width:52px; height:44px; font-size:22px;">🔊</button>
     </div>
   </div>
@@ -201,10 +207,10 @@
     <ul>
       <li>💡 Use hints to reveal a random safe tile when you are stuck.</li>
       <li>🚩 Place flags on tiles you are sure are mines so you do not tap them by mistake.</li>
+      <li>📡 paid scanner that safely reveals a tile of your choice (2 per round).</li>
       <li>⏱ Faster clears help you climb the daily best times.</li>
       <li>🎵 Use the volume and music buttons to control sound.</li>
       <li>🎨 Switch themes to change the look and background music.</li>
-      <li>📤 Share your clears directly to Farcaster from the in game share button.</li>
     </ul>
 
     <button id="instr-close">Got it</button>

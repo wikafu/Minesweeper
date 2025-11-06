@@ -84,6 +84,9 @@ body {
   gap: 12px;
   align-items: center;
   justify-content: flex-start;
+
+    position: relative;  /* safe even if it was already set above */
+  left: -16px;          /* 👈 move EVERYTHING 8 pixels to the left */
 }
 
 
@@ -203,60 +206,80 @@ button {
   text-shadow: 0 0 6px rgba(124, 77, 255, 0.6);
 }
 
-/* Daily button: white pill with charge bar + glow when ready */
+/* Daily button: GOLDEN TICKET with charge bar */
 #daily-button {
   position: relative;
-  padding: 6px 16px;
+  padding: 6px 20px;
   font-size: 13px;
-  font-weight: 600;
-  border-radius: 999px;
-  background: #fdfdf0;
-  color: #222;
-  border: 1px solid rgba(255, 230, 150, 0.9);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.4),
-    0 0 12px rgba(255, 230, 150, 0.6);
+  font-weight: 700;
+  color: #3a2500;
   white-space: nowrap;
-  height: 32px;
+  height: 34px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;   /* keep bar inside pill */
+
+  /* ticket shape – rectangle with little notches in the sides */
+  border-radius: 10px;
+  clip-path: polygon(
+    0% 0%,
+    100% 0%,
+    100% 25%,
+    97% 50%,
+    100% 75%,
+    100% 100%,
+    0% 100%,
+    0% 75%,
+    3% 50%,
+    0% 25%
+  );
+
+  /* shiny gold gradient */
+  background: linear-gradient(
+    135deg,
+    #fff7cf,
+    #ffe27a,
+    #ffbf3c,
+    #ffdd80
+  );
+  border: 1px solid rgba(140, 90, 0, 0.7);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 0 16px rgba(255, 210, 120, 0.8);
+  overflow: hidden;   /* keep fill inside ticket */
 }
 
+/* label text stays on top of the fill */
 #daily-label {
   position: relative;
   z-index: 1;
 }
 
-#daily-fill {
-  z-index: 0;
-}
-
-/* glassy yellow fill that grows across the entire pill */
+/* charging bar inside the ticket */
 #daily-fill {
   position: absolute;
   inset: 0;
   width: 0%;
   height: 100%;
+  z-index: 0;
+
   background: linear-gradient(
     90deg,
-    rgba(255, 245, 180, 0.35),
-    rgba(255, 230, 100, 0.85)
+    rgba(255, 255, 255, 0.25),
+    rgba(255, 240, 140, 0.95)
   );
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  border-radius: 999px;
-  opacity: 0.8;  /* 👈 stronger fill */
+  opacity: 0.9;
   transition: width 0.35s ease-out, opacity 0.2s ease-out;
   pointer-events: none;
 }
 
-/* still make it visible only in cooldown */
+/* only bright when actually in cooldown */
 #daily-button.cooldown #daily-fill {
   opacity: 1;
 }
-
 
 /* when READY (clickable): soft glow pulse */
 #daily-button.ready {
@@ -295,8 +318,15 @@ button {
 }
 
 #daily-button.cooldown {
-  animation: none;
+  animation: none; /* keep this: no pulsing while locked */
+
+  /* 🔸 make it look pale / tired */
+  filter: grayscale(0.35) brightness(0.9);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 6px rgba(0, 0, 0, 0.8);
 }
+
 
 /* tiny pop + glow when you tap Daily */
 #daily-button.daily-launch {
@@ -324,16 +354,28 @@ button {
   }
 }
 
-/* in game buttons row */
+#daily-streak {
+  text-align: center;
+  font-style: italic;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  color: #ffdb8a;
+  text-shadow: 0 0 6px rgba(255, 190, 70, 0.9);
+  opacity: 0.9;
+}
+
+/* in game buttons row – unified white pills */
 #flag-button,
 #hint,
-#share,
+#power,
 #mute {
-  background: linear-gradient(145deg, #1a1a24, #101018);
-  color: #f5f5ff;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  color: #000;
+  border: 1px solid rgba(255, 255, 255, 0.85);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8);
+  transition: all 0.15s ease;
 }
+
 
 
 #flag-button {
@@ -342,11 +384,21 @@ button {
   font-size: 26px;
 }
 
-#share,
+#hint,
+#power,
 #mute {
   width: 52px;
   height: 44px;
   font-size: 22px;
+}
+
+/* Hover for normal states */
+#flag-button:hover:not(.active),
+#hint:hover:not([disabled]),
+#power:hover:not(.power-armed):not(.power-empty),
+#mute:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
 }
 
 /* button feedback */
@@ -355,10 +407,6 @@ button:active {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
 }
 
-/* flag color will still be toggled in JS */
-#flag-button {
-  background-color: transparent;
-}
 
 /* board sizing variables */
 :root {
@@ -366,13 +414,46 @@ button:active {
   --cell: 45px;
 }
 
+/* Active / armed state – blue fill + glow */
+#flag-button.active,
+#power.power-armed {
+  background: #00aaff;
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.9);
+  color: #000;
+  transform: translateY(-1px);
+}
+
+
+/* Smooth transitions */
+#power {
+  transition: all 0.15s ease;
+}
+
+/* Empty / disabled – grey + faded */
+#hint[disabled],
+#power.power-empty {
+  background: rgba(255, 255, 255, 0.45);
+  color: #444;
+  opacity: 0.65;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* optional: locked but not empty */
+#power.power-locked {
+  opacity: 0.8;
+}
+
+
+
+
 /* ---------- GAME HUD (LEVEL / MINES / TIME / BEST) ---------- */
 
 #game-hud {
   width: 100%;
   max-width: 340px;                 /* a bit tighter */
   margin: 4px auto 6px;             /* horizontally centered */
-  transform: translateX(-8px);  /* 👈 shift left slightly */
+  transform: translateX(0px);  /* 👈 shift left slightly */
   padding: 9px 12px 11px;
   border-radius: 16px;
   background: radial-gradient(circle at top, rgba(10, 10, 25, 0.98), rgba(5, 5, 15, 0.96));
@@ -443,9 +524,12 @@ button:active {
 }
 
 #game-hud.hud-daily {
-  border-color: rgba(0, 191, 255, 0.9);
-  box-shadow: 0 0 18px rgba(0, 191, 255, 0.95);
+  border-color: rgba(255, 215, 100, 0.95);
+  box-shadow:
+    0 0 14px rgba(255, 210, 90, 0.9),
+    0 0 26px rgba(255, 190, 70, 0.8);
 }
+
 
 #game-hud.hud-hard {
   border-color: rgba(255, 92, 92, 0.9);
@@ -490,12 +574,51 @@ button:active {
     0 0 26px rgba(124, 77, 255, 0.9),
     0 20px 40px rgba(0, 0, 0, 0.9);
   margin: 0 auto;
-  transform: translateX(-10px);   /* tiny nudge to the left */
+  transform: translateX(0px);
+  position: relative;          /* needed for the daily halo */
 }
 
 #board {
   margin-bottom: 35px; /* 👈 add some space below the board */
 }
+
+/* Daily Challenge board - brighter cyan vibe */
+#board.board-daily {
+  background: radial-gradient(circle at top, #e6f8ff, #b7e6ff);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 0 30px rgba(0, 190, 255, 0.95),
+    0 22px 46px rgba(0, 0, 0, 0.95);
+}
+
+/* soft cyan halo behind the daily board */
+#board.board-daily::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 14px;
+  box-shadow:
+    0 0 38px rgba(0, 210, 255, 0.9),
+    0 0 70px rgba(0, 210, 255, 0.6);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Daily tiles: same layout, slightly different tint */
+#board.board-daily div {
+  background: linear-gradient(145deg, #f5fbff, #d1ecff);
+  box-shadow:
+    inset 0 0 4px rgba(0, 160, 255, 0.22);
+}
+
+/* clicked tiles in Daily: a bit more neon blue */
+#board.board-daily div.tile-clicked {
+  background: linear-gradient(145deg, #c7f0ff, #9cdfff);
+  box-shadow:
+    inset 0 0 10px rgba(0, 190, 255, 0.6),
+    0 0 8px rgba(0, 190, 255, 0.85);
+}
+
 
 /* daily board intro pop */
 #board.board-daily-intro {
@@ -635,13 +758,7 @@ button:active {
     font-size: 15px;
   }
 }
-/* when flag mode is ON */
-#flag-button.active {
-  background: linear-gradient(145deg, #007aff, #00bfff);
-  box-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
-  color: #fff;
-  transform: scale(1.03);
-}
+
 /* game over popup */
 #gameover-overlay {
   position: absolute;
@@ -925,6 +1042,68 @@ body.theme-inferno #theme-particles::after {
   mix-blend-mode: screen;
 }
 
+/* 6. Daily Challenge Theme – golden aura */
+body.theme-daily {
+  background: radial-gradient(circle at top, #2b1a00 0%, #0f0900 55%, #000000 100%);
+}
+
+body.theme-daily #home-screen,
+body.theme-daily #game-screen {
+  background: radial-gradient(circle at top, rgba(255, 190, 60, 0.25), rgba(40, 25, 0, 0.96));
+}
+
+/* Board glow for gold mode */
+body.theme-daily #board {
+  background: radial-gradient(circle at top, #fff8e0, #ffe8a0);
+  box-shadow:
+    0 0 0 1px rgba(255, 230, 150, 0.8),
+    0 0 40px rgba(255, 190, 60, 0.95),
+    0 25px 50px rgba(0, 0, 0, 0.9);
+}
+
+/* Gold shimmer around the board */
+body.theme-daily #board::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 14px;
+  box-shadow:
+    0 0 50px rgba(255, 190, 60, 0.9),
+    0 0 90px rgba(255, 200, 80, 0.7);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Tile tint for gold mode */
+body.theme-daily #board div {
+  background: linear-gradient(145deg, #fff6d4, #fbe79c);
+  box-shadow:
+    inset 0 0 4px rgba(255, 210, 60, 0.35);
+}
+
+/* Clicked tiles in Daily - stronger contrast */
+body.theme-daily #board div.tile-clicked {
+  background: linear-gradient(145deg, #ffe08a, #f7c14f);
+  border: 1px solid rgba(170, 110, 20, 0.7);
+  box-shadow:
+    inset 0 0 4px rgba(120, 70, 10, 0.7),
+    0 0 6px rgba(255, 210, 80, 0.7);
+  color: #3a2500;
+}
+
+
+/* Floating golden particles */
+body.theme-daily #theme-particles::before,
+body.theme-daily #theme-particles::after {
+  background-image:
+    radial-gradient(3px 3px at 20% 30%, rgba(255, 210, 60, 0.9) 0, transparent 70%),
+    radial-gradient(3px 3px at 60% 70%, rgba(255, 240, 180, 0.7) 0, transparent 70%),
+    radial-gradient(3px 3px at 80% 20%, rgba(255, 220, 100, 0.8) 0, transparent 70%);
+  opacity: 0.9;
+  mix-blend-mode: screen;
+}
+
+
 /* ---------- THEME PARTICLE OVERLAY (always on top, but click-through) ---------- */
 
 #theme-particles {
@@ -990,7 +1169,7 @@ body.theme-inferno #theme-particles::after {
 
 #daily-progress-label {
   font-size: 12px;
-  transform: translateX(-8px);  /* 👈 shift left slightly */
+  transform: translateX(0px);  /* 👈 shift left slightly */
   opacity: 0.85;
   color: #f5f5ff;
 }
@@ -998,7 +1177,7 @@ body.theme-inferno #theme-particles::after {
 .daily-progress-bar {
   width: 100%;
   height: 6px;
-  transform: translateX(-8px);  /* 👈 shift left slightly */
+  transform: translateX(0px);  /* 👈 shift left slightly */
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
   overflow: hidden;
@@ -1011,6 +1190,24 @@ body.theme-inferno #theme-particles::after {
   background: linear-gradient(90deg, #00c6ff, #007aff);
   transition: width 0.15s ease-out;
 }
+
+/* Daily mode - gold progress bar */
+body.theme-daily #daily-progress-label {
+  color: #ffe7a3;
+  text-shadow:
+    0 0 6px rgba(255, 210, 90, 0.9);
+}
+
+body.theme-daily .daily-progress-bar {
+  background: rgba(90, 60, 10, 0.9);
+  box-shadow:
+    0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+body.theme-daily .daily-progress-bar-fill {
+  background: linear-gradient(90deg, #ffe27a, #ffc04a);
+}
+
 /* 🎵 Music toggle button at bottom-right of home screen */
 #music-toggle {
   width: 40px;
@@ -1189,4 +1386,80 @@ body.theme-inferno #theme-particles::after {
   background: #5a3cff;
   color: #fff;
   font-size: 15px;
+}
+/* move bottom buttons slightly left */
+#flag-button,
+#hint,
+#power,
+#mute {
+position: static;
+}
+
+
+/* ☕ tiny coffee orb */
+#support-orb {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  background: radial-gradient(circle at 30% 20%, #fffbe4, #f2c15d);
+  box-shadow:
+    0 0 10px rgba(255, 215, 120, 0.9),
+    0 4px 14px rgba(0, 0, 0, 0.9);
+}
+
+/* coffee emoji in the middle */
+#support-orb .orb-emoji {
+  font-size: 22px;
+}
+
+/* floating text above the orb */
+#support-orb .orb-text {
+  position: absolute;
+  left: 50%;
+  bottom: 52px;              /* sits above the orb */
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  background: rgba(0, 0, 0, 0.88);
+  color: #ffe9a9;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+
+  animation: orbFloat 2.4s ease-in-out infinite;
+}
+
+/* gentle up-down float */
+@keyframes orbFloat {
+  0% {
+    transform: translate(-50%, 0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -6px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 0);
+    opacity: 0.8;
+  }
+}
+
+/* small “thanks” pulse class (used by JS) */
+#support-orb.orb-thanks {
+  box-shadow:
+    0 0 14px rgba(144, 238, 144, 0.9),
+    0 4px 16px rgba(0, 0, 0, 0.9);
+  transform: translateY(-1px);
 }

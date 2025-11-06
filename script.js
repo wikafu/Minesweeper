@@ -15,6 +15,11 @@ let dailyGlobalBestMs = 0;   // today's best daily time from the server
 let dailyFillEl = null;  // yellow charge bar inside Daily button
 let dailyLabelEl = null;  // text inside the Daily button
 
+const MAX_POWER_CHARGES = 2;   // how many uses per round
+let powerCharges = 0;          // how many left this round
+let powerUnlocked = false;     // becomes true after tx
+let powerArmed = false;        // true = next tap uses power
+
 // Base wallet state (for sending tips)
 let baseProvider = null;
 let currentWalletAddress = null;
@@ -44,11 +49,13 @@ function pickTodayTheme() {
 function applyTheme(theme) {
   const body = document.body;
   THEMES.forEach((t) => body.classList.remove('theme-' + t));
+  body.classList.remove('theme-daily');      // remove daily overlay if any
   body.classList.add('theme-' + theme);
 
   // play theme music
   playThemeLoop(theme);
 }
+
 
 // set + remember theme
 function setTheme(theme) {
@@ -306,7 +313,7 @@ if (diff <= 0) {
 
   btn.disabled = false;
   btn.style.opacity = '1';
-  if (dailyLabelEl) dailyLabelEl.textContent = 'Daily Challenge';
+  if (dailyLabelEl) dailyLabelEl.textContent = '📅⚡ Daily Challenge';
   btn.classList.remove('cooldown');
   btn.classList.add('ready');
 
@@ -325,7 +332,7 @@ if (diff <= 0) {
 
     // numeric label
 btn.disabled = true;
-btn.style.opacity = '0.9';
+btn.style.opacity = '0.6';
 if (dailyLabelEl) {
   dailyLabelEl.textContent = `Next in ${h}:${m}:${s}`;
 }
@@ -362,7 +369,7 @@ function updateDailyButtonState() {
 
     // put the text inside the label span instead of wiping the button
     if (dailyLabelEl) {
-      dailyLabelEl.textContent = 'Daily Challenge';
+      dailyLabelEl.textContent = '📅⚡ Daily Challenge';
     }
 
     btn.classList.remove('cooldown');
@@ -386,7 +393,7 @@ function updateDailyButtonState() {
     btn.style.opacity = '1';
 
     if (dailyLabelEl) {
-      dailyLabelEl.textContent = 'Daily Challenge';
+      dailyLabelEl.textContent = '📅⚡ Daily Challenge';
     }
 
     btn.classList.remove('cooldown');
@@ -769,6 +776,44 @@ function updateHintUI() {
   }
 }
 
+// Power UI
+function updatePowerUI() {
+  const btn = document.getElementById('power');
+  if (!btn) return;
+
+  // reset state classes
+  btn.classList.remove('power-armed', 'power-empty', 'power-locked');
+
+  // 🔒 LOCKED (no tx done yet)
+  if (!powerUnlocked) {
+    btn.textContent = '🔒';
+    btn.disabled = false;      // can still be clicked to trigger tx later
+    btn.style.opacity = '1';
+    btn.classList.add('power-locked');
+    return;
+  }
+
+  // 📡0 → no charges left
+  if (powerCharges <= 0) {
+    btn.textContent = '📡0';
+    btn.disabled = true;
+    btn.style.opacity = '0.5'; // same "faded" effect as Hint
+    btn.classList.add('power-empty');
+    return;
+  }
+
+  // 📡1 / 📡2 → ready
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  btn.textContent = '📡' + powerCharges;
+
+  // when "armed", just glow blue (no emoji change)
+  if (powerArmed) {
+    btn.classList.add('power-armed');
+  }
+}
+
+
   // update the tiny daily progress bar
 function updateDailyProgress() {
   const wrap  = document.getElementById('daily-progress-wrap');
@@ -998,7 +1043,8 @@ function showGameOverPopup(kind) {
 // ---- Base tip helper (mandatory before starting a run) ----
 const TIP_ADDRESS = "0xcA1e6B80c545ee50A2941a5f062Be6956D3CeD6E"; // 👈 put your real Base address here
 
-async function requireBaseTip(actionLabel, buttonEl) {
+async function requireBaseTip(actionLabel, buttonEl, overrideValueHex) {
+
   // must be inside Farcaster mini app with wallet support
   if (!window.sdk || !window.sdk.wallet) {
     alert("Open in Farcaster Mini App to play (wallet required).");
@@ -1028,14 +1074,16 @@ async function requireBaseTip(actionLabel, buttonEl) {
 
     const from = accounts[0];
 
-    // 0.00001 ETH in wei = 10^13 = 0x9184e72a000
+    // 🔹 choose value: custom (override) or default 0.00001 ETH
+    const valueHex = overrideValueHex || "0x9184e72a000"; // 0.00001 ETH
+
     const txHash = await provider.request({
       method: "eth_sendTransaction",
       params: [
         {
           from,
           to: TIP_ADDRESS,
-          value: "0x9184e72a000", // 0.00001 ETH
+          value: valueHex,
           chainId: "0x2105"       // Base mainnet
         }
       ]
@@ -1068,7 +1116,6 @@ async function requireBaseTip(actionLabel, buttonEl) {
     buttonEl.textContent = originalText;
   }
 }
-
 
 window.onload = function () {
 
@@ -1263,40 +1310,64 @@ if (muteBtn) {
     });
   }
 
+  // power button (paid super-hint)
+  const powerBtn = document.getElementById('power');
+  if (powerBtn) {
+    powerBtn.addEventListener('click', async () => {
+      // if never unlocked → ask for tx
+      if (!powerUnlocked) {
+        const ok = await requireBaseTip('power-boost', powerBtn);
+        if (!ok) {
+          // user cancelled / failed tx → no power
+          return;
+        }
 
-// share button in game
-const shareBtn = document.getElementById('share');
-if (shareBtn) {
-  shareBtn.addEventListener('click', async () => {
-    try {
-      await sdk.actions.composeCast({
-        text: `💣 cleared Minesweeper in ${document.getElementById('best').textContent}! Play here: https://farcaster.xyz/miniapps/0fX1N8Evb5Lg/minesweeper`,
-        embeds: [{ url: 'https://farcaster.xyz/miniapps/0fX1N8Evb5Lg/minesweeper' }]
-      });
-    } catch {}
+        // tx ok → grant charges and arm it
+        powerUnlocked = true;
+        powerCharges = MAX_POWER_CHARGES;
+        powerArmed = false;
+        updatePowerUI();
+        return;
+      }
+
+      // already unlocked: toggle armed state (if we still have charges)
+      if (powerCharges > 0) {
+        powerArmed = !powerArmed;
+        updatePowerUI();
+      }
+    });
+
+    // set initial look
+    updatePowerUI();
+  }
+
+
+  // popup home
+if (goHome) {
+  goHome.addEventListener('click', () => {
+    if (goOverlay) goOverlay.style.display = 'none';
+    const home = document.getElementById('home-screen');
+    const game = document.getElementById('game-screen');
+    if (home && game) {
+      home.style.display = 'flex';
+      game.style.display = 'none';
+    }
+
+    // leave daily visual mode
+    document.body.classList.remove('theme-daily');
+    applyTheme(currentTheme);   // restore the users chosen theme
+
+    dailyMode = false;
+    dailySeed = '';
+    lastGameWasDaily = false;
+    stopTimer();
+    lastElapsedMs = 0;
+    renderTimer(0);
+    updateDailyProgress();
+    updateHudTheme();
   });
 }
 
-  // popup home
-  if (goHome) {
-    goHome.addEventListener('click', () => {
-      if (goOverlay) goOverlay.style.display = 'none';
-      const home = document.getElementById('home-screen');
-      const game = document.getElementById('game-screen');
-      if (home && game) {
-        home.style.display = 'flex';
-        game.style.display = 'none';
-      }
-      dailyMode = false;
-      dailySeed = '';
-      lastGameWasDaily = false;
-      stopTimer();
-      lastElapsedMs = 0;
-      renderTimer(0);
-      updateDailyProgress();
-      updateHudTheme();   // 👈 add this
-    });
-  }
 
 // popup replay
 if (goReplay) {
@@ -1328,7 +1399,7 @@ if (goShare) {
       const level = currentLevel;
       const time = formatTime(lastElapsedMs);
       await sdk.actions.composeCast({
-        text: `🧩 cleared Minesweeper (${level}) in ${time}! Play here: https://farcaster.xyz/miniapps/0fX1N8Evb5Lg/minesweeper`,
+        text: `💣 cleared Minesweeper (${level}) in ${time}! Play here: https://farcaster.xyz/miniapps/0fX1N8Evb5Lg/minesweeper`,
         embeds: [{ url: 'https://farcaster.xyz/miniapps/0fX1N8Evb5Lg/minesweeper' }]
       });
     } catch {}
@@ -1379,6 +1450,30 @@ if (goShare) {
     // load your personal daily best (local)
   loadYourDailyBest();
 
+    // ☕ Support Orb – "Buy coffee for dev"
+  const supportOrb = document.getElementById('support-orb');
+  if (supportOrb) {
+    supportOrb.addEventListener('click', async () => {
+      // 0.00005 ETH = 5e13 wei = 0x2d79883d2000
+      const coffeeValueHex = "0x2aa05f2000000";
+
+      const ok = await requireBaseTip('support-orb', supportOrb, coffeeValueHex);
+      if (!ok) return;
+
+      // tiny "thanks" feedback
+      const textSpan = supportOrb.querySelector('.orb-text');
+      const oldText = textSpan ? textSpan.textContent : '';
+
+      supportOrb.classList.add('orb-thanks');
+      if (textSpan) textSpan.textContent = 'Thanks for the coffee!';
+
+      setTimeout(() => {
+        supportOrb.classList.remove('orb-thanks');
+        if (textSpan) textSpan.textContent = oldText || 'Buy coffee for dev';
+      }, 1300);
+    });
+  }
+
 // connect wallet button
 const walletBtn = document.getElementById('connect-wallet');
 const walletAddr = document.getElementById('wallet-address');
@@ -1422,6 +1517,12 @@ if (walletBtn) {
     }
   });
 }
+// load streak value
+const streakEl = document.getElementById('daily-streak');
+if (streakEl) {
+  const streak = Number(localStorage.getItem('minesweeper:dailyStreak') || 0);
+  streakEl.textContent = `Streak: 🔥 ${streak}`;
+}
 };
 
 // set mines, daily or random
@@ -1462,7 +1563,15 @@ function startGame() {
   gameOver = false;
 
   hintsLeft = MAX_HINTS;
+
+  // reset power for this round
+  powerUnlocked = false;
+  powerArmed = false;
+  powerCharges = 0;
+  updatePowerUI();
+
   stopTimer();
+
   lastElapsedMs = 0;
   renderTimer(0);
   applyLevelSettings();
@@ -1470,8 +1579,22 @@ function startGame() {
   updateDailyProgress();
   updateHudTheme();   // 👈 add this
 
-  const boardEl = document.getElementById('board');
-  if (boardEl) boardEl.innerHTML = '';
+  // switch background theme for Daily runs
+const body = document.body;
+if (lastGameWasDaily) {
+  body.classList.add('theme-daily');
+} else {
+  body.classList.remove('theme-daily');
+}
+
+const boardEl = document.getElementById('board');
+if (boardEl) {
+  boardEl.innerHTML = '';
+
+  // special look when this run is Daily
+  boardEl.classList.toggle('board-daily', lastGameWasDaily);
+}
+
 
   setMines();
 
@@ -1520,10 +1643,46 @@ function setFlag() {
   }
 }
 
+function usePowerOnTile(tile) {
+  // don’t waste a charge on already revealed or flagged tiles
+  if (tile.classList.contains('tile-clicked') || tile.innerText === '🚩') {
+    return;
+  }
+
+  // spend one charge
+  powerCharges -= 1;
+  if (powerCharges < 0) powerCharges = 0;
+
+  // if this tile is a mine → flag it safely
+  if (minesLocation.includes(tile.id)) {
+    tile.innerText = '🚩';
+  } else {
+    // safe tile → reveal like normal
+    const coords = tile.id.split('-');
+    const r = parseInt(coords[0]);
+    const c = parseInt(coords[1]);
+    playClick();
+    checkMine(r, c);
+  }
+
+  // if no charges left, drop out of armed mode
+  if (powerCharges <= 0) {
+    powerArmed = false;
+  }
+
+  updatePowerUI();
+}
+
 function clickTile() {
   if (gameOver || this.classList.contains('tile-clicked')) return;
 
   let tile = this;
+
+  // if power is armed, use it on this tile instead of normal click
+  if (powerArmed && powerUnlocked && powerCharges > 0) {
+    usePowerOnTile(tile);
+    return;
+  }
 
   // flag mode
   if (flagEnabled) {
@@ -1534,6 +1693,7 @@ function clickTile() {
     }
     return;
   }
+
 
   // start timer on first safe tap
   if (!timerRunning && !minesLocation.includes(tile.id)) {
@@ -1675,6 +1835,30 @@ function checkMine(r, c) {
       maybeUpdateYourDailyBest(lastElapsedMs);
       dailyMode = false;
     }
+
+// 🔥 Update streak (local only)
+const streakKey = 'minesweeper:dailyStreak';
+const lastWinKey = 'minesweeper:lastWinDate';
+const today = getTodayLocalDateString();
+
+const prevDate = localStorage.getItem(lastWinKey);
+let streak = Number(localStorage.getItem(streakKey) || 0);
+
+// if yesterday was last win, continue streak
+if (prevDate) {
+  const prev = new Date(prevDate);
+  const diff = (new Date(today) - prev) / 86400000;
+  if (diff === 1) streak += 1;
+  else if (diff > 1) streak = 1; // broke streak, restart
+} else {
+  streak = 1;
+}
+
+localStorage.setItem(streakKey, String(streak));
+localStorage.setItem(lastWinKey, today);
+
+const streakEl = document.getElementById('daily-streak');
+if (streakEl) streakEl.textContent = `Streak: 🔥 ${streak}`;
 
 
     updateHintUI();
