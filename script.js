@@ -1041,21 +1041,20 @@ function showGameOverPopup(kind) {
   }
 
 // ---- Base tip helper (mandatory before starting a run) ----
-const TIP_ADDRESS = "0xcA1e6B80c545ee50A2941a5f062Be6956D3CeD6E"; // 👈 put your real Base address here
+const TIP_ADDRESS = "0xcA1e6B80c545ee50A2941a5f062Be6956D3CeD6E"; // your Base address
 
 async function requireBaseTip(actionLabel, buttonEl, overrideValueHex) {
-
-
   // must be inside Farcaster mini app with wallet support
   if (!window.sdk || !window.sdk.wallet) {
     alert("Open in Farcaster Mini App to play (wallet required).");
     return false;
   }
 
-  const originalText = buttonEl.textContent;
+  // 🔹 IMPORTANT: snapshot the REAL markup + disabled state
+  const originalHTML = buttonEl.innerHTML;
   const originalDisabled = buttonEl.disabled;
 
-  // show "waiting for tx..." state
+  // show "waiting for tx..." state without destroying layout forever
   buttonEl.disabled = true;
   buttonEl.innerHTML = '<span class="tx-wait">Waiting for tx...</span>';
 
@@ -1075,8 +1074,8 @@ async function requireBaseTip(actionLabel, buttonEl, overrideValueHex) {
 
     const from = accounts[0];
 
-    // 🔹 choose value: custom (override) or default 0.00001 ETH
-    const valueHex = overrideValueHex || "0x9184e72a000"; // 0.00001 ETH
+    // default: 0.00001 ETH unless override is passed
+    const valueHex = overrideValueHex || "0x9184e72a000";
 
     const txHash = await provider.request({
       method: "eth_sendTransaction",
@@ -1092,7 +1091,6 @@ async function requireBaseTip(actionLabel, buttonEl, overrideValueHex) {
 
     console.log("Tip tx result for", actionLabel, txHash);
 
-    // 👇 IMPORTANT PART: if no hash (null/undefined/empty), treat as cancel
     if (!txHash) {
       console.warn("No tx hash returned, treating as cancelled.");
       return false;
@@ -1103,20 +1101,20 @@ async function requireBaseTip(actionLabel, buttonEl, overrideValueHex) {
   } catch (err) {
     console.error("Tip tx error:", err);
 
-    // user rejected in most wallets
     if (err && (err.code === 4001 || err.code === "ACTION_REJECTED")) {
+      // user rejected in wallet
       return false;
     }
 
-    // other error
     alert("Transaction failed. Please try again.");
     return false;
   } finally {
-    // restore button state
+    // 🔹 ALWAYS restore original button (cancel OR confirm)
     buttonEl.disabled = originalDisabled;
     buttonEl.innerHTML = originalHTML;
   }
 }
+
 
 window.onload = function () {
 
@@ -1451,29 +1449,30 @@ if (goShare) {
     // load your personal daily best (local)
   loadYourDailyBest();
 
-    // ☕ Support Orb – "Buy coffee for dev"
-  const supportOrb = document.getElementById('support-orb');
-  if (supportOrb) {
-    supportOrb.addEventListener('click', async () => {
-      // 0.00005 ETH = 5e13 wei = 0x2d79883d2000
-      const coffeeValueHex = "0x9184e72a000";
+// ☕ Support Orb – "Buy coffee for dev"
+const supportOrb = document.getElementById('support-orb');
+if (supportOrb) {
+  supportOrb.addEventListener('click', async () => {
+    // 0.00075 ETH = 750000000000000 wei = 0x2aa1efb94e000
+    const coffeeValueHex = "0x9184e72a000";
 
-      const ok = await requireBaseTip('support-orb', supportOrb, coffeeValueHex);
-      if (!ok) return;
+    const ok = await requireBaseTip('support-orb', supportOrb, coffeeValueHex);
+    if (!ok) return; // cancelled or failed
 
-      // tiny "thanks" feedback
-      const textSpan = supportOrb.querySelector('.orb-text');
-      const oldText = textSpan ? textSpan.textContent : '';
+    // tiny "thanks" feedback
+    const textSpan = supportOrb.querySelector('.orb-text');
+    const oldText = textSpan ? textSpan.textContent : '';
 
-      supportOrb.classList.add('orb-thanks');
-      if (textSpan) textSpan.textContent = 'Thanks for the coffee!';
+    supportOrb.classList.add('orb-thanks');
+    if (textSpan) textSpan.textContent = 'Thanks for the coffee!';
 
-      setTimeout(() => {
-        supportOrb.classList.remove('orb-thanks');
-        if (textSpan) textSpan.textContent = oldText || 'Buy coffee for dev';
-      }, 1300);
-    });
-  }
+    setTimeout(() => {
+      supportOrb.classList.remove('orb-thanks');
+      if (textSpan) textSpan.textContent = oldText || 'Buy coffee for dev';
+    }, 1300);
+  });
+}
+
 
 // connect wallet button
 const walletBtn = document.getElementById('connect-wallet');
