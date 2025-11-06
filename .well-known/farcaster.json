@@ -7,7 +7,7 @@
 "miniapp": {
   "version": "1",
   "name": "MineSweeper",
-  "subtitle": "Flip tiles. Dodge bombs. Own the board.",
+  "subtitle": "Tap smart. Avoid bombs.",
   "description": "A sleek Farcaster mini-game where every tap could be your last. Clear the grid, chase the daily challenge, and flex your best time.",
   "homeUrl": "https://minesweeper-nine-mocha.vercel.app",
   "webhookUrl": "https://minesweeper-nine-mocha.vercel.app/api/webhook",

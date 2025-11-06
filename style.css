@@ -1289,15 +1289,18 @@ body.theme-daily .daily-progress-bar-fill {
 
 
 
-/* instructions overlay */
 #instructions-overlay {
   position: fixed;
   inset: 0;
-  display: none;           /* hidden by default */
+  display: none;              /* shown via JS */
   justify-content: center;
   align-items: center;
   z-index: 40;
+
+  /* 👇 this helps on small screens so the card can have a max-height < 100vh */
+  padding: 16px;
 }
+
 
 .instr-backdrop {
   position: absolute;
@@ -1308,16 +1311,18 @@ body.theme-daily .daily-progress-bar-fill {
 .instr-card {
   position: relative;
   max-width: 320px;
-  max-height: 80vh;
+  max-height: calc(100vh - 40px);   /* always a bit smaller than the viewport */
   background: rgba(10, 10, 10, 0.95);
   border-radius: 16px;
   padding: 16px 18px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
-  overflow-y: auto;
+  overflow-y: auto;                 /* 🔥 scroll inside card */
+  -webkit-overflow-scrolling: touch;/* smooth iOS scroll */
   z-index: 41;
   font-size: 14px;
 }
+
 
 .instr-card h2 {
   font-size: 18px;
@@ -1478,9 +1483,4 @@ position: static;
 #home-screen #player-fid .fid-avatar {
   border-radius: 50% !important;
 }
-/* make instructions scrollable on small screens */
-.instr-card {
-  overflow-y: auto;
-  max-height: 80vh;
-  -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
-}
+
