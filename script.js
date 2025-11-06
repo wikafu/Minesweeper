@@ -1056,7 +1056,7 @@ async function requireBaseTip(actionLabel, buttonEl, overrideValueHex) {
 
   // show "waiting for tx..." state
   buttonEl.disabled = true;
-  buttonEl.textContent = "Waiting for tx...";
+  buttonEl.innerHTML = '<span class="tx-wait">Waiting for tx...</span>';
 
   try {
     const provider = await window.sdk.wallet.getEthereumProvider();
@@ -1113,7 +1113,7 @@ async function requireBaseTip(actionLabel, buttonEl, overrideValueHex) {
   } finally {
     // restore button state
     buttonEl.disabled = originalDisabled;
-    buttonEl.textContent = originalText;
+    buttonEl.innerHTML = originalHTML;
   }
 }
 

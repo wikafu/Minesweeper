@@ -1463,3 +1463,13 @@ position: static;
     0 4px 16px rgba(0, 0, 0, 0.9);
   transform: translateY(-1px);
 }
+
+.support-orb.orb-pulse {
+  animation: orbPulse 0.5s ease-out;
+}
+
+@keyframes orbPulse {
+  0%   { transform: translateY(0) scale(1); }
+  40%  { transform: translateY(-2px) scale(1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
